@@ -20,8 +20,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -86,7 +88,6 @@ fun DashboardScreen() {
     )
 
     Scaffold(
-        topBar = { DashboardScreenTopBar() }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -120,6 +121,8 @@ fun DashboardScreen() {
                     Text(text = "Start Study Session")
                 }
             }
+            item { Spacer(Modifier.height(8.dp)) }
+            item { TaskFilterChips() }
             tasksList(
                 sectionTitle = "UPCOMING TASKS",
                 emptyListText = "You don't have any upcoming tasks.\n " +
@@ -169,10 +172,11 @@ private fun CountCardsSection(
             count = "$subjectCount"
         )
         Spacer(modifier = Modifier.width(10.dp))
-        CountCard(
+        ProgressCard(
             modifier = Modifier.weight(1f),
-            headingText = "Studied Hours",
-            count = studiedHours
+            title = "Study Progress",
+            value = studiedHours.toFloatOrNull() ?: 0f,
+            goal = goalHours.toFloatOrNull() ?: 0f
         )
         Spacer(modifier = Modifier.width(10.dp))
         CountCard(
@@ -191,23 +195,14 @@ private fun SubjectCardsSection(
     onAddIconClicked: () -> Unit
 ) {
     Column(modifier = modifier) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "SUBJECTS",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 12.dp)
-            )
-            IconButton(onClick = onAddIconClicked) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Subject"
-                )
+        SectionHeader(
+            title = "Subjects",
+            action = {
+                IconButton(onClick = onAddIconClicked) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add Subject")
+                }
             }
-        }
+        )
         if (subjectList.isEmpty()) {
             Image(
                 modifier = Modifier
@@ -236,5 +231,77 @@ private fun SubjectCardsSection(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SectionHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        action?.invoke()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TaskFilterChips(
+    modifier: Modifier = Modifier,
+    options: List<String> = listOf("All", "Today", "This week"),
+) {
+    var selected by remember { mutableStateOf(options.first()) }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+    ) {
+        options.forEach { label ->
+            FilterChip(
+                selected = selected == label,
+                onClick = { selected = label },
+                label = { Text(label) },
+                modifier = Modifier.padding(end = 8.dp)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProgressCard(
+    title: String,
+    value: Float,
+    goal: Float,
+    modifier: Modifier = Modifier
+) {
+    val pct = remember(value, goal) {
+        if (goal <= 0f) 0f else (value / goal).coerceIn(0f, 1f)
+    }
+    Column(modifier) {
+        Text(
+            title,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(6.dp))
+        LinearProgressIndicator(
+            progress = pct,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+        )
+        Spacer(Modifier.height(6.dp))
+        Text("${value.toInt()} / ${goal.toInt()} hrs", style = MaterialTheme.typography.bodySmall)
     }
 }
