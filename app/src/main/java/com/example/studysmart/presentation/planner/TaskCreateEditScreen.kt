@@ -22,7 +22,7 @@ fun TaskCreateEditScreen(onDone: () -> Unit) {
     var showPicker by remember { mutableStateOf(false) }
 
     // Priority Dropdown
-    val options = Priority.values().toList()
+    val options = Priority.entries
     var expanded by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf(Priority.MEDIUM) }
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,11 +16,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -84,7 +93,8 @@ fun SessionScreen() {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(bottom = 96.dp)
         ) {
             item {
                 TimerSection(
@@ -128,40 +138,66 @@ fun SessionScreen() {
 private fun SessionScreenTopBar(
     onBackButtonClick: () -> Unit
 ) {
-    TopAppBar(
+    CenterAlignedTopAppBar(
         navigationIcon = {
             IconButton(onClick = onBackButtonClick) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Navigate to Back Screen"
-                )
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
             }
         },
         title = {
-            Text(text = "Study Sessions", style = MaterialTheme.typography.headlineSmall)
+            Text("Study Sessions", style = MaterialTheme.typography.headlineSmall)
+        },
+        actions = {
+            IconButton(onClick = { /* TODO: show menu */ }) {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More")
+            }
         }
     )
 }
 
+
 @Composable
 private fun TimerSection(
-    modifier: Modifier
+    modifier: Modifier,
+    progress: Float = 0.18f,                 // 先写死个进度，后面接逻辑
+    timeText: String = "00:05:32",
+    isRunning: Boolean = false,
+    onToggle: () -> Unit = {}
 ) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(250.dp)
-                .border(5.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+    Box(modifier, contentAlignment = Alignment.Center) {
+        // 背景环
+        CircularProgressIndicator(
+            progress = 1f,
+            strokeWidth = 12.dp,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.size(260.dp)
         )
+        // 前景环
+        CircularProgressIndicator(
+            progress = progress.coerceIn(0f, 1f),
+            strokeWidth = 12.dp,
+            modifier = Modifier.size(260.dp)
+        )
+        // 中央时间
         Text(
-            text = "00:05:32",
-            style = MaterialTheme.typography.titleLarge.copy(fontSize = 45.sp)
+            text = timeText,
+            style = MaterialTheme.typography.displaySmall
         )
+        // 悬浮播放/暂停
+        FilledTonalIconButton(
+            onClick = onToggle,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+        ) {
+            Icon(
+                imageVector = if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                contentDescription = if (isRunning) "Pause" else "Start"
+            )
+        }
     }
 }
+
 
 @Composable
 private fun RelatedToSubjectSection(
@@ -202,25 +238,22 @@ private fun ButtonsSection(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Button(onClick = cancelButtonClick) {
-            Text(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                text = "Cancel"
-            )
-        }
-        Button(onClick = startButtonClick) {
-            Text(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                text = "Start"
-            )
-        }
-        Button(onClick = finishButtonClick) {
-            Text(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                text = "Finish"
-            )
-        }
+        OutlinedButton(
+            onClick = cancelButtonClick,
+            modifier = Modifier.weight(1f)
+        ) { Text("Cancel") }
+
+        Button(
+            onClick = startButtonClick,
+            modifier = Modifier.weight(1f)
+        ) { Text("Start") }
+
+        FilledTonalButton(
+            onClick = finishButtonClick,
+            modifier = Modifier.weight(1f)
+        ) { Text("Finish") }
     }
 }

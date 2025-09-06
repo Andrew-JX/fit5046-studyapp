@@ -1,15 +1,12 @@
 package com.example.studysmart.presentation.subject
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
+
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -17,7 +14,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.MoreVert
+
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -39,11 +39,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.studysmart.domain.model.Subject
 import com.example.studysmart.presentation.components.AddSubjectDialog
-import com.example.studysmart.presentation.components.CountCard
+
 import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.studySessionsList
 import com.example.studysmart.presentation.components.tasksList
@@ -52,7 +53,7 @@ import com.example.studysmart.tasks
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubjectScreen() {
+fun SubjectScreen(previewTopBarMenuOpen: Boolean = false ) {
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val listState = rememberLazyListState()
@@ -106,7 +107,8 @@ fun SubjectScreen() {
                 onBackButtonClick = { },
                 onDeleteButtonClick = { isDeleteSubjectDialogOpen = true},
                 onEditButtonClick = { isEditSubjectDialogOpen = true},
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                previewMenuOpen = previewTopBarMenuOpen
             )
         },
         floatingActionButton = {
@@ -124,16 +126,6 @@ fun SubjectScreen() {
                 .fillMaxSize()
                 .padding(paddingValue)
         ) {
-            item {
-                SubjectOverviewSection(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    studiedHours = "10",
-                    goalHours = "15",
-                    progress = 0.75f
-                )
-            }
             tasksList(
                 sectionTitle = "UPCOMING TASKS",
                 emptyListText = "You don't have any upcoming tasks.\n " +
@@ -174,16 +166,17 @@ private fun SubjectScreenTopBar(
     onBackButtonClick: () -> Unit,
     onDeleteButtonClick: () -> Unit,
     onEditButtonClick: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior
+    scrollBehavior: TopAppBarScrollBehavior,
+    previewMenuOpen: Boolean = false
 ) {
+    val inPreview = LocalInspectionMode.current
+    var showMenu by rememberSaveable { mutableStateOf(inPreview && previewMenuOpen) }
+
     LargeTopAppBar(
         scrollBehavior = scrollBehavior,
         navigationIcon = {
             IconButton(onClick = onBackButtonClick) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "navigate back"
-                )
+                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
             }
         },
         title = {
@@ -195,68 +188,38 @@ private fun SubjectScreenTopBar(
             )
         },
         actions = {
-            IconButton(onClick = onDeleteButtonClick) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Subject"
-                )
-            }
+            // 直接可见的操作（区别立竿见影）
             IconButton(onClick = onEditButtonClick) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Subject"
+                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit subject")
+            }
+            IconButton(onClick = onDeleteButtonClick) {
+                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete subject")
+            }
+            // 更多
+            IconButton(onClick = { showMenu = true }) {
+                Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "More")
+            }
+            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                DropdownMenuItem(
+                    text = { Text("Rename") },
+                    onClick = { showMenu = false; onEditButtonClick() }
+                )
+                DropdownMenuItem(
+                    text = { Text("Change color") },
+                    onClick = { showMenu = false; onEditButtonClick() }
+                )
+                DropdownMenuItem(
+                    text = { Text("Edit goal hours") },
+                    onClick = { showMenu = false; onEditButtonClick() }
+                )
+                DropdownMenuItem(
+                    text = { Text("Share") },
+                    onClick = { showMenu = false /* TODO */ }
                 )
             }
         }
     )
 }
 
-@Composable
-private fun SubjectOverviewSection(
-    modifier: Modifier,
-    studiedHours: String,
-    goalHours: String,
-    progress: Float
-) {
-    val percentageProgress = remember(progress) {
-        (progress * 100).toInt().coerceIn(0, 100)
-    }
 
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        CountCard(
-            modifier = Modifier.weight(1f),
-            headingText = "Goal Study Hours",
-            count = goalHours
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        CountCard(
-            modifier = Modifier.weight(1f),
-            headingText = "Study Hours",
-            count = studiedHours
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Box(
-            modifier = Modifier.size(75.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.fillMaxSize(),
-                progress = 1f,
-                strokeWidth = 4.dp,
-                strokeCap = StrokeCap.Round,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            )
-            CircularProgressIndicator(
-                modifier = Modifier.fillMaxSize(),
-                progress = progress,
-                strokeWidth = 4.dp,
-                strokeCap = StrokeCap.Round
-            )
-            Text(text = "$percentageProgress%")
-        }
-    }
-}
+

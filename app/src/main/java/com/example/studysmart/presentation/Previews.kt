@@ -19,15 +19,15 @@ import com.example.studysmart.presentation.profile.ProfileScreen
 @Preview(showBackground = true, showSystemUi = true)
 @Composable fun DashboardScreenPreview() { StudySmartTheme { DashboardScreen() } }
 
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun SubjectScreenPreview() { StudySmartTheme { SubjectScreen() } }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun SessionScreenPreview() { StudySmartTheme { SessionScreen() } }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun TaskScreenPreview() { StudySmartTheme { TaskScreen() } }
-//
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun SubjectScreenPreview() { StudySmartTheme { SubjectScreen() } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun SessionScreenPreview() { StudySmartTheme { SessionScreen() } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun TaskScreenPreview() { StudySmartTheme { TaskScreen() } }
+
 //@Preview(showBackground = true, showSystemUi = true)
 //@Composable fun LoginPreview() { StudySmartTheme { LoginScreen(onLoggedIn = {}) } }
 //
