@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.studysmart.presentation.nav.Route
+import androidx.compose.material.icons.filled.Task
 
 data class DrawerItem(val label: String, val route: String, val icon: ImageVector)
 
@@ -18,5 +19,6 @@ val appDrawerItems = listOf(
     DrawerItem("Planner",    Route.Planner.route,   Icons.Default.EventNote),
     DrawerItem("Resources",  Route.Resources.route, Icons.Default.LibraryBooks),
     DrawerItem("Sessions",   Route.Session.route,   Icons.Default.Timer),
+    DrawerItem(label = "Tasks",Route.Tasks.route,Icons.Filled.Task),
     DrawerItem("Profile",    Route.Profile.route,   Icons.Default.AccountCircle),
 )

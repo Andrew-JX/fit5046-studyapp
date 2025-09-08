@@ -38,6 +38,7 @@ sealed class Route(val route: String) {
     data object Subjects : Route("subjects")
     data object Planner : Route("planner")
     data object Resources : Route("resources")
+    data object Tasks : Route("tasks")
     data object Profile : Route("profile")
 
     // 子页
@@ -57,13 +58,13 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
     val scope = rememberCoroutineScope()
 
     // 底部栏项目（保持你原来的）
-    val bottomItems = listOf(
-        BottomItem(Route.Dashboard.route, "Home", Icons.Filled.Home),
-        BottomItem(Route.Subjects.route,  "Courses", Icons.Filled.MenuBook),
-        BottomItem(Route.Planner.route,   "Planner", Icons.Filled.Schedule),
-        BottomItem(Route.Resources.route, "Resources", Icons.Filled.List),
-        BottomItem(Route.Profile.route,   "Profile", Icons.Filled.AccountCircle),
-    )
+//    val bottomItems = listOf(
+//        BottomItem(Route.Dashboard.route, "Home", Icons.Filled.Home),
+//        BottomItem(Route.Subjects.route,  "Courses", Icons.Filled.MenuBook),
+//        BottomItem(Route.Planner.route,   "Planner", Icons.Filled.Schedule),
+//        BottomItem(Route.Resources.route, "Resources", Icons.Filled.List),
+//        BottomItem(Route.Profile.route,   "Profile", Icons.Filled.AccountCircle),
+//    )
 
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
@@ -129,6 +130,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
                 composable(Route.Subjects.route)   { SubjectScreen() }
                 composable(Route.Planner.route) { TaskScreen() }
                 composable(Route.Resources.route)  { ResourcesScreen() }
+                composable(Route.Tasks.route) { TaskScreen() }
                 composable(Route.Profile.route)    { ProfileScreen(onLogout = { nav.navigate(Route.Login.route) }) }
 
                 // 子页
