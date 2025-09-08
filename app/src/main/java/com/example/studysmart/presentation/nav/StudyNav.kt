@@ -93,27 +93,27 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
                     )
                 }
             },
-            bottomBar = {
-                if (!chromeHidden) {
-                    NavigationBar {
-                        val current = currentRoute
-                        bottomItems.forEach { item ->
-                            NavigationBarItem(
-                                selected = current == item.route,
-                                onClick = {
-                                    nav.navigate(item.route) {
-                                        popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = { Icon(item.icon, contentDescription = item.label) },
-                                label = { Text(item.label) }
-                            )
-                        }
-                    }
-                }
-            }
+//            bottomBar = {
+//                if (!chromeHidden) {
+//                    NavigationBar {
+//                        val current = currentRoute
+//                        bottomItems.forEach { item ->
+//                            NavigationBarItem(
+//                                selected = current == item.route,
+//                                onClick = {
+//                                    nav.navigate(item.route) {
+//                                        popUpTo(nav.graph.findStartDestination().id) { saveState = true }
+//                                        launchSingleTop = true
+//                                        restoreState = true
+//                                    }
+//                                },
+//                                icon = { Icon(item.icon, contentDescription = item.label) },
+//                                label = { Text(item.label) }
+//                            )
+//                        }
+//                    }
+//                }
+//            }
         ) { inner ->
             NavHost(
                 navController = nav,
@@ -127,7 +127,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
 
                 composable(Route.Dashboard.route)  { DashboardScreen() }
                 composable(Route.Subjects.route)   { SubjectScreen() }
-//                composable(Route.Planner.route)    { TaskScreen(onEditTask = { nav.navigate(Route.TaskEdit.route) }) } // ← 复原这行
+                composable(Route.Planner.route) { TaskScreen() }
                 composable(Route.Resources.route)  { ResourcesScreen() }
                 composable(Route.Profile.route)    { ProfileScreen(onLogout = { nav.navigate(Route.Login.route) }) }
 

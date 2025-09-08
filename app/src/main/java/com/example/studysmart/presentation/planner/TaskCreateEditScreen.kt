@@ -1,10 +1,13 @@
 // app/src/main/java/com/example/studysmart/presentation/planner/TaskCreateEditScreen.kt
 package com.example.studysmart.presentation.planner
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.studysmart.util.Priority
 import com.example.studysmart.util.changeMillisToDateString
@@ -54,7 +57,14 @@ fun TaskCreateEditScreen(onDone: () -> Unit) {
                     DropdownMenuItem(
                         text = { Text(it.title) },
                         onClick = { selected = it; expanded = false },
-                        trailingIcon = { Box(Modifier.size(12.dp)) { /*这里用颜色块表示   未完成*/ } }
+                        trailingIcon = {
+                            Box(
+                                Modifier
+                                    .size(12.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(it.color)
+                            )
+                        }
                     )
                 }
             }

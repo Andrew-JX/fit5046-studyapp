@@ -28,23 +28,25 @@ import com.example.studysmart.presentation.profile.ProfileScreen
 @Preview(showBackground = true, showSystemUi = true)
 @Composable fun TaskScreenPreview() { StudySmartTheme { TaskScreen() } }
 
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun LoginPreview() { StudySmartTheme { LoginScreen(onLoggedIn = {}) } }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun SignUpPreview() { StudySmartTheme { SignUpScreen(onSignedUp = {}) } }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun OnboardingPreview() { StudySmartTheme { OnboardingScreen(onFinish = {}) } }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun TaskEditPreview() { StudySmartTheme { TaskCreateEditScreen(onDone = {}) } }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun ResourcesPreview() { StudySmartTheme { ResourcesScreen() } }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable fun ProfilePreview() { StudySmartTheme { ProfileScreen(onLogout = {}) } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun LoginPreview() { StudySmartTheme { LoginScreen(onLoggedIn = {}) } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun SignUpPreview() { StudySmartTheme { SignUpScreen(onSignedUp = {}) } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun OnboardingPreview() { StudySmartTheme { OnboardingScreen(onFinish = {}) } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun TaskEditPreview() { StudySmartTheme { TaskCreateEditScreen(onDone = {}) } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun ResourcesPreview() { StudySmartTheme { ResourcesScreen() } }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable fun ProfilePreview() { StudySmartTheme { ProfileScreen(onLogout = {}) } }
+
 
 @Preview(showBackground = true, showSystemUi = true, name = "App Shell (drawer closed)")
 @Composable
