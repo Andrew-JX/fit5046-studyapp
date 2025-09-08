@@ -6,7 +6,7 @@ import com.example.studysmart.presentation.theme.Green
 import com.example.studysmart.presentation.theme.Orange
 import com.example.studysmart.presentation.theme.Red
 
-enum class Strength(val label: String, val color: Color) { WEAK("弱", Red), MEDIUM("中", Orange), STRONG("强", Green) }
+enum class Strength(val label: String, val color: Color) { WEAK("Weak", Red), MEDIUM("Medium", Orange), STRONG("Strong", Green) }
 
 fun calcStrength(pw: String): Strength {
     var s = 0

@@ -68,7 +68,7 @@ fun SignUpScreen(onSignedUp: () -> Unit) {
             }
         )
         Text(
-            "密码强度：${strength.label}",
+            "Password strength：${strength.label}",
             color = strength.color,
             style = MaterialTheme.typography.bodySmall
         )
@@ -79,7 +79,7 @@ fun SignUpScreen(onSignedUp: () -> Unit) {
             visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation()
         )
         val mismatch = confirm.isNotEmpty() && confirm != pass
-        if (mismatch) Text("两次密码不一致", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        if (mismatch) Text("The two passwords are inconsistent", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(20.dp))
         Button(onClick = onSignedUp, modifier = Modifier.fillMaxWidth(), enabled = !mismatch && pass.isNotBlank() && email.isNotBlank()) {
             Text("Create account")
