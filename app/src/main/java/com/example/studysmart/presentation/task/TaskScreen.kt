@@ -1,5 +1,6 @@
 package com.example.studysmart.presentation.task
 
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +23,9 @@ import com.example.studysmart.presentation.components.SubjectListBottomSheet
 import com.example.studysmart.presentation.components.TaskCheckBox
 import com.example.studysmart.presentation.components.TaskDatePicker
 import com.example.studysmart.presentation.theme.Red
-import com.example.studysmart.subjects
+import com.example.studysmart.data.repo.sessions
+import com.example.studysmart.data.repo.subjects
+import com.example.studysmart.data.repo.tasks
 import com.example.studysmart.util.Priority
 import com.example.studysmart.util.changeMillisToDateString
 import kotlinx.coroutines.launch
@@ -76,18 +79,16 @@ fun TaskScreen() {
         onDismissRequest = { isDatePickerDialogOpen = false },
         onConfirmButtonClicked = {
             val picked = datePickerState.selectedDateMillis
-            // 如果想强制不早于今天，可解开下面注释
-            // val todayStart = Calendar.getInstance().apply {
-            //     set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
-            //     set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-            // }.timeInMillis
-            // dueDate = when {
-            //     picked == null -> null
-            //     picked < todayStart -> todayStart
-            //     else -> picked
-            // }
+             val todayStart = Calendar.getInstance().apply {
+                 set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                 set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+             }.timeInMillis
+             dueDate = when {
+                 picked == null -> null
+                 picked < todayStart -> todayStart
+                 else -> picked
+             }
 
-            dueDate = picked
             isDatePickerDialogOpen = false
         }
     )

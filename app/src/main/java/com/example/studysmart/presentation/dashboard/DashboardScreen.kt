@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.room.Delete
 import com.example.studysmart.R
 import com.example.studysmart.domain.model.Session
 import com.example.studysmart.domain.model.Subject
@@ -50,9 +49,9 @@ import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.SubjectCard
 import com.example.studysmart.presentation.components.studySessionsList
 import com.example.studysmart.presentation.components.tasksList
-import com.example.studysmart.sessions
-import com.example.studysmart.subjects
-import com.example.studysmart.tasks
+import com.example.studysmart.data.repo.sessions
+import com.example.studysmart.data.repo.subjects
+import com.example.studysmart.data.repo.tasks
 
 @Composable
 fun DashboardScreen() {

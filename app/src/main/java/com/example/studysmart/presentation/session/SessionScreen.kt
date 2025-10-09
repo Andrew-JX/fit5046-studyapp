@@ -47,8 +47,9 @@ import androidx.compose.ui.unit.sp
 import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.SubjectListBottomSheet
 import com.example.studysmart.presentation.components.studySessionsList
-import com.example.studysmart.sessions
-import com.example.studysmart.subjects
+import com.example.studysmart.data.repo.sessions
+import com.example.studysmart.data.repo.subjects
+import com.example.studysmart.data.repo.tasks
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

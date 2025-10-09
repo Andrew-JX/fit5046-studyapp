@@ -43,8 +43,9 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -53,60 +54,61 @@ android {
 }
 
 dependencies {
+    // ---- Compose BOM（只保留一个，统一所有 compose 版本）----
+    implementation(platform("androidx.compose:compose-bom:2024.09.00"))
 
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.activity:activity-compose:1.8.0")
-    implementation(platform("androidx.compose:compose-bom:2023.10.00"))
+    // Compose UI（由 BOM 协调版本）
+
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0-alpha02")
+    // Material3（由 BOM 协调；如需 DatePicker，BOM 会给到 1.3.x）
+    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.compose.material3:material3-window-size-class")
+    // 基础
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("androidx.activity:activity-compose:1.9.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
+    implementation("androidx.compose.material:material-icons-extended")
 
-    //compose destination
+
+
+    // Hilt（KSP 路线：不要再用 kapt）
+    implementation("com.google.dagger:hilt-android:2.51")
+    ksp("com.google.dagger:hilt-compiler:2.51")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    // （删除旧的：ksp("androidx.hilt:hilt-compiler:1.0.0")/implementation("androidx.hilt:hilt-navigation-compose:1.0.0")）
+
+    // Room（保留 KSP 处理器）
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
+    // Compose Destinations
     val destinationVersion = "1.9.52"
     implementation("io.github.raamcosta.compose-destinations:core:$destinationVersion")
     ksp("io.github.raamcosta.compose-destinations:ksp:$destinationVersion")
 
-    // Room
-    val roomVersion = "2.5.2"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-
-    //Dagger-Hilt
-    implementation("com.google.dagger:hilt-android:2.48")
-    ksp("com.google.dagger:hilt-android-compiler:2.48")
-    ksp("androidx.hilt:hilt-compiler:1.0.0")
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
-
-    //fonts
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.3")
-
-    //Desugaring
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
-
-
-
-    // Navigation
+    // Navigation / Work / DataStore
     implementation("androidx.navigation:navigation-compose:2.7.7")
-
-    // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    // DataStore
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    // 字体
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.2")
 
-    // Material
-    implementation("androidx.compose.material:material-icons-extended")
+    // 单元测试
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
+    // Desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
