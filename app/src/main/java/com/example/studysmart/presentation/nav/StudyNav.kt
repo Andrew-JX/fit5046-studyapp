@@ -48,6 +48,16 @@ sealed class Route(val route: String) {
 
 data class BottomItem(val route: String, val label: String, val icon: ImageVector)
 
+/**
+ Main app composable with navigation
+  Features:
+  - Modal Navigation Drawer for main navigation
+  - NavHost for screen routing
+  - Bottom navigation bar (optional)
+  - Authentication flow (Login → SignUp → Onboarding → Dashboard)
+  @param drawerInitiallyOpen Whether drawer should be open initially
+ */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudyApp(drawerInitiallyOpen: Boolean = false) {
@@ -118,7 +128,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
         ) { inner ->
             NavHost(
                 navController = nav,
-                startDestination = Route.Login.route,
+                startDestination = Route.SignUp.route,
                 modifier = Modifier.padding(inner)
             ) {
                 // ===== 你的路由保持不变（唯一建议：把 Planner 打开） =====

@@ -1,5 +1,17 @@
 package com.example.studysmart.presentation.auth
 
+/**
+  Authentication screens for login and sign-up
+  Features:
+  - LoginScreen: Email/password login with validation
+  - SignUpScreen: New user registration with password strength indicator
+  - Form validation with error messages
+  - Password visibility toggle
+  - Loading states
+ */
+
+import androidx.compose.foundation.layout.*
+// ... 其他 imports
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
