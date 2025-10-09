@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 
+//JH：设置闹钟
 /*class ReminderScheduler(private val ctx: Context) {
     fun scheduleTaskReminder(triggerAtMillis: Long) {
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
