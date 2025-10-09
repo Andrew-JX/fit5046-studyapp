@@ -19,6 +19,6 @@ val appDrawerItems = listOf(
     DrawerItem("Planner",    Route.Planner.route,   Icons.Default.EventNote),
     DrawerItem("Resources",  Route.Resources.route, Icons.Default.LibraryBooks),
     DrawerItem("Sessions",   Route.Session.route,   Icons.Default.Timer),
-    DrawerItem(label = "Tasks",Route.Tasks.route,Icons.Filled.Task),
+//    DrawerItem(label = "Tasks",Route.Tasks.route,Icons.Filled.Task),
     DrawerItem("Profile",    Route.Profile.route,   Icons.Default.AccountCircle),
 )

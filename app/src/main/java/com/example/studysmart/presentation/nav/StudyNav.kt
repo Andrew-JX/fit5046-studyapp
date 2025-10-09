@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -38,7 +39,7 @@ sealed class Route(val route: String) {
     data object Subjects : Route("subjects")
     data object Planner : Route("planner")
     data object Resources : Route("resources")
-    data object Tasks : Route("tasks")
+//    data object Tasks : Route("tasks")
     data object Profile : Route("profile")
 
     // 子页
@@ -130,7 +131,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
                 composable(Route.Subjects.route)   { SubjectScreen() }
                 composable(Route.Planner.route) { TaskScreen() }
                 composable(Route.Resources.route)  { ResourcesScreen() }
-                composable(Route.Tasks.route) { TaskScreen() }
+//                composable(Route.Tasks.route) { TaskScreen() }
                 composable(Route.Profile.route)    { ProfileScreen(onLogout = { nav.navigate(Route.Login.route) }) }
 
                 // 子页
