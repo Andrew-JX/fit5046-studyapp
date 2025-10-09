@@ -118,7 +118,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
         ) { inner ->
             NavHost(
                 navController = nav,
-                startDestination = Route.Dashboard.route,
+                startDestination = Route.Login.route,
                 modifier = Modifier.padding(inner)
             ) {
                 // ===== 你的路由保持不变（唯一建议：把 Planner 打开） =====
