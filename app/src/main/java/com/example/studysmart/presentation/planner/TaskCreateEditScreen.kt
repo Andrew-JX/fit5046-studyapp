@@ -1,62 +1,128 @@
-// app/src/main/java/com/example/studysmart/presentation/planner/TaskCreateEditScreen.kt
 package com.example.studysmart.presentation.planner
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+
+import androidx.compose.material3.DropdownMenuItem
+
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+
 import com.example.studysmart.util.Priority
 import com.example.studysmart.util.changeMillisToDateString
 import java.util.Calendar
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskCreateEditScreen(onDone: () -> Unit) {
-    var title by remember { mutableStateOf("") }
-    var desc by remember { mutableStateOf("") }
+fun TaskCreateEditScreen(
+    onDone: (TaskUiState) -> Unit,
+    onCancel: () -> Unit = {}
+) {
+    // ---- State ----
+    var title by rememberSaveable { mutableStateOf("") }
+    var desc by rememberSaveable { mutableStateOf("") }
 
-    // DatePicker
-    val today = Calendar.getInstance().timeInMillis
+    // 今日 00:00（用于校验过去日期）
+    val today = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
     val dateState = rememberDatePickerState(initialSelectedDateMillis = today)
     var showPicker by remember { mutableStateOf(false) }
 
-    // Priority Dropdown
-    val options = Priority.entries
+    // 优先级（用 values() 适配所有 Kotlin 版本）
+    val options = Priority.values()
     var expanded by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(Priority.MEDIUM) }
+    var selectedPriority by rememberSaveable { mutableStateOf(Priority.MEDIUM) }
+
+    // Subject BottomSheet（占位数据）
+    val fakeSubjects = listOf(1L to "Math", 2L to "CS", 3L to "Chem")
+    var subjectSheet by remember { mutableStateOf(false) }
+    var chosenSubject: Pair<Long, String>? by rememberSaveable { mutableStateOf(null) }
+
+    // 日期是否非法（过去日期）
+    val selectedDate = dateState.selectedDateMillis ?: today
+    val dateInvalid = selectedDate < today
 
     Column(Modifier.fillMaxSize().padding(20.dp)) {
         Text("Task", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") }, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(value = desc, onValueChange = { desc = it }, label = { Text("Description") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = title,
+            onValueChange = { title = it },
+            label = { Text("Title") },
+            modifier = Modifier.fillMaxWidth(),
+            isError = title.isBlank(),
+            supportingText = {
+                if (title.isBlank()) Text("Title is required")
+            }
+        )
 
         Spacer(Modifier.height(12.dp))
-        // Form Rule #2: Use a date picker, not manual input
         OutlinedTextField(
-            value = dateState.selectedDateMillis.changeMillisToDateString(),
-            onValueChange = {}, readOnly = true, label = { Text("Due date") },
+            value = desc,
+            onValueChange = { desc = it },
+            label = { Text("Description") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(12.dp))
+        // 日期（只读 + 选择器）
+        OutlinedTextField(
+            value = selectedDate.changeMillisToDateString(),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Due date") },
             trailingIcon = { TextButton(onClick = { showPicker = true }) { Text("Pick") } },
+            modifier = Modifier.fillMaxWidth(),
+            isError = dateInvalid,
+            supportingText = { if (dateInvalid) Text("Date cannot be in the past") }
+        )
+
+        Spacer(Modifier.height(12.dp))
+        // 学科选择
+        OutlinedTextField(
+            value = chosenSubject?.second ?: "Select subject",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Subject") },
+            trailingIcon = { TextButton(onClick = { subjectSheet = true }) { Text("Choose") } },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(Modifier.height(12.dp))
         Text("Priority", style = MaterialTheme.typography.bodySmall)
+
+        // 去掉 menuAnchor()，避免老版本 material3 报错
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             OutlinedTextField(
-                value = selected.title, onValueChange = {}, readOnly = true,
-                label = { Text("Choose") }, modifier = Modifier.menuAnchor().fillMaxWidth()
+                value = selectedPriority.title,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Choose") },
+                modifier = Modifier.fillMaxWidth()
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 options.forEach {
                     DropdownMenuItem(
                         text = { Text(it.title) },
-                        onClick = { selected = it; expanded = false },
+                        onClick = { selectedPriority = it; expanded = false },
                         trailingIcon = {
                             Box(
                                 Modifier
@@ -71,15 +137,53 @@ fun TaskCreateEditScreen(onDone: () -> Unit) {
         }
 
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onDone, modifier = Modifier.fillMaxWidth(), enabled = title.isNotBlank()) { Text("Save") }
+        Button(
+            onClick = {
+                // 保存前再做一次过去日期校验（双保险）
+                if (selectedDate < today) return@Button
+                onDone(
+                    TaskUiState(
+                        title = title.trim(),
+                        description = desc.trim(),
+                        dueDateMillis = selectedDate,
+                        priority = selectedPriority,
+                        subjectId = chosenSubject?.first
+                    )
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = title.isNotBlank() && !dateInvalid
+        ) { Text("Save") }
+
+        TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
+            Text("Cancel")
+        }
     }
 
+    // ---- 弹层 ----
     if (showPicker) {
-        DatePickerDialog(onDismissRequest = { showPicker = false },
-            confirmButton = {
-                TextButton(onClick = { showPicker = false }) { Text("OK") }
-            },
+        DatePickerDialog(
+            onDismissRequest = { showPicker = false },
+            confirmButton = { TextButton(onClick = { showPicker = false }) { Text("OK") } },
             dismissButton = { TextButton(onClick = { showPicker = false }) { Text("Cancel") } }
         ) { DatePicker(state = dateState) }
+    }
+
+    if (subjectSheet) {
+        ModalBottomSheet(onDismissRequest = { subjectSheet = false }) {
+            fakeSubjects.forEach { (id, name) ->
+                // 用 Row 代替 ListItem，避免 API 差异
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            chosenSubject = id to name
+                            subjectSheet = false
+                        }
+                        .padding(16.dp)
+                ) { Text(name) }
+            }
+            Spacer(Modifier.height(24.dp))
+        }
     }
 }
