@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/*
 @Singleton
 class FakeTaskRepo @Inject constructor() : TaskRepo {
     private val idGen = AtomicLong(1)
@@ -31,4 +32,39 @@ class FakeTaskRepo @Inject constructor() : TaskRepo {
 
     override suspend fun searchTasks(keyword: String): List<Task> =
         store.value.filter { it.title.contains(keyword, true) || it.description.contains(keyword, true) }
+}
+*/
+
+@Singleton
+class FakeTaskRepo @Inject constructor() : TaskRepo {
+    private val idGen = AtomicLong(1)
+    private val store = MutableStateFlow<List<Task>>(emptyList())
+
+    override fun observeTasks(subjectId: Long?, onlyIncomplete: Boolean): Flow<List<Task>> =
+        store.map { list ->
+            list.filter { t ->
+                (subjectId == null || t.subjectId == subjectId) &&
+                        (!onlyIncomplete || !t.isCompleted)
+            }
+        }
+
+    override suspend fun getTask(id: Long): Task? = store.value.find { it.id == id }
+
+    override suspend fun upsertTask(t: Task): Long {
+        val id = t.id ?: idGen.getAndIncrement()
+        val newT = t.copy(id = id)
+        store.value = store.value.filterNot { it.id == id } + newT
+        return id
+    }
+
+    override suspend fun deleteTask(id: Long) {
+        store.value = store.value.filterNot { it.id == id }
+    }
+
+    override suspend fun searchTasks(keyword: String): List<Task> =
+        store.value.filter { it.title.contains(keyword, true) || it.description.contains(keyword, true) }
+
+    override suspend fun setCompleted(id: Long, completed: Boolean) {
+        store.value = store.value.map { if (it.id == id) it.copy(isCompleted = completed) else it }
+    }
 }
