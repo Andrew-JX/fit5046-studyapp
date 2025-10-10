@@ -48,9 +48,9 @@ import com.example.studysmart.presentation.components.AddSubjectDialog
 import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.studySessionsList
 import com.example.studysmart.presentation.components.tasksList
-import com.example.studysmart.sessions
-import com.example.studysmart.tasks
-
+import com.example.studysmart.data.repo.sessions
+import com.example.studysmart.data.repo.subjects
+import com.example.studysmart.data.repo.tasks
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectScreen(previewTopBarMenuOpen: Boolean = false ) {
