@@ -1,13 +1,12 @@
+// app/src/main/java/com/example/studysmart/presentation/task/TaskScreen.kt
 package com.example.studysmart.presentation.task
 
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,15 +16,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.studysmart.data.repo.subjects // 先用假数据弹出学科底单
+import com.example.studysmart.domain.model.Task
 import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.SubjectListBottomSheet
 import com.example.studysmart.presentation.components.TaskCheckBox
 import com.example.studysmart.presentation.components.TaskDatePicker
+import com.example.studysmart.presentation.components.tasksList
 import com.example.studysmart.presentation.theme.Red
-import com.example.studysmart.data.repo.sessions
-import com.example.studysmart.data.repo.subjects
-import com.example.studysmart.data.repo.tasks
 import com.example.studysmart.util.Priority
 import com.example.studysmart.util.changeMillisToDateString
 import kotlinx.coroutines.launch
@@ -34,28 +35,34 @@ import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskScreen() {
-    // ====== UI 状态 ======
+fun TaskScreen(
+    vm: TaskViewModel = hiltViewModel()
+) {
+    // ===== VM data (list Flow→State)=====
+    val tasks by vm.tasks.collectAsState()
+
+    // ===== Form Status =====
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedPriority by rememberSaveable { mutableStateOf(Priority.MEDIUM) }
 
-    // 截止日期：我们自己维护（允许为 null 代表“无截止日期”）
     var dueDate by rememberSaveable { mutableStateOf<Long?>(Instant.now().toEpochMilli()) }
     var isDatePickerDialogOpen by rememberSaveable { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = dueDate ?: Instant.now().toEpochMilli()
     )
 
-    // 选择科目的 BottomSheet
+    // Subject selection BottomSheet       ( Now using fake data)
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
     var isBottomSheetOpen by remember { mutableStateOf(false) }
+    var chosenSubjectId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var chosenSubjectName by rememberSaveable { mutableStateOf("English") } // 默认显示
 
-    // 删除任务对话框
+    // 删除对话框（当前页只演示“新建”，按钮占位）
     var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
 
-    // 校验
+    // check
     val taskTitleError = when {
         title.isBlank() -> "Please enter task title."
         title.length < 4 -> "Task title is too short."
@@ -63,7 +70,169 @@ fun TaskScreen() {
         else -> null
     }
 
-    // ====== 对话框们 ======
+    // Snackbar(Save the result)
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) {
+        vm.events.collect { e ->
+            when (e) {
+                is TaskEvent.Saved -> {
+                    snackbarHostState.showSnackbar("Saved #${e.id}")
+                    // 清表单（保留优先级与学科）
+                    title = ""
+                    description = ""
+                    dueDate = Instant.now().toEpochMilli()
+                }
+                is TaskEvent.Error -> snackbarHostState.showSnackbar(e.message)
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TaskScreenTopBar(
+                isTaskExist = false, // 新建页：隐藏右上角“删除/勾选”
+                isComplete = false,
+                checkBoxBorderColor = Red,
+                onBackButtonClick = { /* TODO: navController?.popBackStack() */ },
+                onDeleteButtonClick = { isDeleteDialogOpen = true },
+                onCheckBoxClick = { /* noop */ }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+
+        // 只保留一个 LazyColumn，避免纵向滚动嵌套
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = paddingValues
+        ) {
+            // ---------- The form as an item ----------
+            item {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+                    Text("Create Task", style = MaterialTheme.typography.headlineMedium)
+                    Spacer(Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("Title") },
+                        singleLine = true,
+                        isError = taskTitleError != null && title.isNotBlank(),
+                        supportingText = { Text(taskTitleError.orEmpty()) }
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = description,
+                        onValueChange = { description = it },
+                        label = { Text("Description") }
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Text("Due date", style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(6.dp))
+
+                    ListItem(
+                        leadingContent = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                        headlineContent = {
+                            Text((dueDate ?: Instant.now().toEpochMilli()).changeMillisToDateString())
+                        },
+                        supportingContent = {
+                            Text(if (dueDate == null) "No due date" else "Tap to change")
+                        },
+                        trailingContent = {
+                            Row {
+                                if (dueDate != null) {
+                                    IconButton(onClick = { dueDate = null }) {
+                                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                                    }
+                                }
+                                IconButton(onClick = { isDatePickerDialogOpen = true }) {
+                                    Icon(Icons.Default.EditCalendar, contentDescription = "Pick date")
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.outlineVariant,
+                                RoundedCornerShape(12.dp)
+                            )
+                            .clickable { isDatePickerDialogOpen = true }
+                            .padding(horizontal = 4.dp)
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Text("Priority", style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(10.dp))
+                    PriorityBar(
+                        selected = selectedPriority,
+                        onSelected = { selectedPriority = it },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Text("Related to subject", style = MaterialTheme.typography.bodySmall)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(chosenSubjectName, style = MaterialTheme.typography.bodyLarge)
+                        IconButton(onClick = { isBottomSheetOpen = true }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Subject")
+                        }
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        enabled = taskTitleError == null && title.isNotBlank(),
+                        onClick = {
+                            val due = dueDate ?: Calendar.getInstance().apply {
+                                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                            }.timeInMillis
+
+                            vm.saveNewTask(
+                                title = title,
+                                description = description,
+                                dueDateMillis = due,
+                                priority = selectedPriority,
+                                subjectId = chosenSubjectId
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Text("Save")
+                    }
+                }
+            }
+
+            // ---------- Task list ----------
+            tasksList(
+                sectionTitle = "ALL",
+                emptyListText = "No tasks yet.",
+                tasks = tasks,
+                onTaskCardClick = { /* TODO: open details */ },
+                onCheckBoxClick = { t: Task ->
+                    val id = t.id ?: return@tasksList
+                    vm.toggleCompleted(id, !t.isCompleted)
+                }
+            )
+            // Your existing tasksList will insert a section title item by itself
+        }
+    }
+
+    // ===== Dialog/popup (not in a scroll container) =====
     DeleteDialog(
         isOpen = isDeleteDialogOpen,
         title = "Delete Task?",
@@ -72,23 +241,12 @@ fun TaskScreen() {
         onConfirmButtonClick = { isDeleteDialogOpen = false }
     )
 
-    // 日期选择器（点确定只改 dueDate，不碰 selectedDateMillis）
     TaskDatePicker(
         state = datePickerState,
         isOpen = isDatePickerDialogOpen,
         onDismissRequest = { isDatePickerDialogOpen = false },
         onConfirmButtonClicked = {
-            val picked = datePickerState.selectedDateMillis
-             val todayStart = Calendar.getInstance().apply {
-                 set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
-                 set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-             }.timeInMillis
-             dueDate = when {
-                 picked == null -> null
-                 picked < todayStart -> todayStart
-                 else -> picked
-             }
-
+            dueDate = datePickerState.selectedDateMillis
             isDatePickerDialogOpen = false
         }
     )
@@ -98,127 +256,14 @@ fun TaskScreen() {
         isOpen = isBottomSheetOpen,
         subjects = subjects,
         onDismissRequest = { isBottomSheetOpen = false },
-        onSubjectClicked = {
+        onSubjectClicked = { sub ->
+            chosenSubjectId = sub.subjectId?.toLong() ?: sub.subjectId?.toLong()
+            chosenSubjectName = sub.name
             scope.launch { sheetState.hide() }.invokeOnCompletion {
                 if (!sheetState.isVisible) isBottomSheetOpen = false
             }
         }
     )
-
-    // ====== 页面 ======
-    Scaffold(
-        topBar = {
-            TaskScreenTopBar(
-                isTaskExist = true,
-                isComplete = false,
-                checkBoxBorderColor = Red,
-                onBackButtonClick = { /* navController?.popBackStack() */ },
-                onDeleteButtonClick = { isDeleteDialogOpen = true },
-                onCheckBoxClick = { /* TODO */ }
-            )
-        }
-    ) { paddingValue ->
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize()
-                .padding(paddingValue)
-                .padding(horizontal = 12.dp)
-        ) {
-            // 标题
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Title") },
-                singleLine = true,
-                isError = taskTitleError != null && title.isNotBlank(),
-                supportingText = { Text(taskTitleError.orEmpty()) }
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            // 描述
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Description") }
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            // Due date
-            Text("Due date", style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(6.dp))
-
-            ListItem(
-                leadingContent = { Icon(Icons.Default.DateRange, contentDescription = null) },
-                headlineContent = { Text(dueDate.changeMillisToDateString()) },
-                supportingContent = {
-                    Text(if (dueDate == null) "No due date" else "Tap to change")
-                },
-                trailingContent = {
-                    Row {
-                        if (dueDate != null) {
-                            IconButton(onClick = { dueDate = null }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Clear")
-                            }
-                        }
-                        IconButton(onClick = { isDatePickerDialogOpen = true }) {
-                            Icon(Icons.Default.EditCalendar, contentDescription = "Pick date")
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.outlineVariant,
-                        RoundedCornerShape(12.dp)
-                    )
-                    .clickable { isDatePickerDialogOpen = true }
-                    .padding(horizontal = 4.dp)
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            // Priority
-            Text("Priority", style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(10.dp))
-            PriorityBar(
-                selected = selectedPriority,
-                onSelected = { selectedPriority = it },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(30.dp))
-
-            // 关联学科
-            Text("Related to subject", style = MaterialTheme.typography.bodySmall)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("English", style = MaterialTheme.typography.bodyLarge)
-                IconButton(onClick = { isBottomSheetOpen = true }) {
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Subject")
-                }
-            }
-
-            // 保存
-            Button(
-                enabled = taskTitleError == null && title.isNotBlank(),
-                onClick = { /* TODO: save */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp)
-            ) {
-                Text("Save")
-            }
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
