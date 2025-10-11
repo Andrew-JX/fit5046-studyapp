@@ -62,13 +62,13 @@ fun SessionScreen() {
 
     var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
 
-
     SubjectListBottomSheet(
         sheetState = sheetState,
         isOpen = isBottomSheetOpen,
         subjects = subjects,
         onDismissRequest = { isBottomSheetOpen = false },
-        onSubjectClicked = {
+        onSubjectClicked = { sub ->
+            selectedSubjectId = sub.id
             scope.launch { sheetState.hide() }.invokeOnCompletion {
                 if (!sheetState.isVisible) isBottomSheetOpen = false
             }

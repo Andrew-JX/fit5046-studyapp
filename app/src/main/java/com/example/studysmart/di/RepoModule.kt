@@ -2,6 +2,7 @@
 package com.example.studysmart.di
 import com.example.studysmart.data.repo.*
 import com.example.studysmart.data.repo.impl.ResourcesRepoRetrofit
+import com.example.studysmart.data.repo.impl.SessionRepoRoomImpl
 import com.example.studysmart.data.repo.impl.SubjectRepoRoomImpl
 import com.example.studysmart.data.repo.impl.TaskRepoRoomImpl
 import dagger.Binds
@@ -20,4 +21,6 @@ abstract class RepoModule {
     @Binds @Singleton
     abstract fun bindSubjectRepo(impl: SubjectRepoRoomImpl): SubjectRepo
 
+    @Binds @Singleton
+    abstract fun bindSessionRepo(impl: SessionRepoRoomImpl): SessionRepo
 }

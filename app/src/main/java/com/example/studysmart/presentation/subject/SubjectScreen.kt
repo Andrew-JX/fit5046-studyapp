@@ -1,225 +1,160 @@
 package com.example.studysmart.presentation.subject
 
-
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
-
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.studysmart.R
 import com.example.studysmart.domain.model.Subject
 import com.example.studysmart.presentation.components.AddSubjectDialog
-
 import com.example.studysmart.presentation.components.DeleteDialog
-import com.example.studysmart.presentation.components.studySessionsList
-import com.example.studysmart.presentation.components.tasksList
-import com.example.studysmart.data.repo.sessions
-import com.example.studysmart.data.repo.subjects
-import com.example.studysmart.data.repo.tasks
+import com.example.studysmart.presentation.components.SubjectCard
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubjectScreen(previewTopBarMenuOpen: Boolean = false ) {
+fun SubjectScreen(
+    vm: SubjectViewModel = hiltViewModel()
+) {
+    val subjects by vm.subjects.collectAsState()
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val listState = rememberLazyListState()
-    val isFABExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
-
-    var isEditSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
-    var isDeleteSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
-    var isDeleteSessionDialogOpen by rememberSaveable { mutableStateOf(false) }
-
+    // —— Add/Edit Dialog 状态 —— //
+    var showAddEdit by remember { mutableStateOf(false) }
+    var editing: Subject? by remember { mutableStateOf(null) }
     var subjectName by remember { mutableStateOf("") }
     var goalHours by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(Subject.subjectCardColors.random()) }
+    var selectedColors by remember { mutableStateOf(listOf(Color(0xFF4F46E5), Color(0xFF8B5CF6))) }
 
+    // 删除确认
+    var toDelete: Subject? by remember { mutableStateOf(null) }
+
+    // 打开编辑时用当前 subject 回填
+    fun openEditor(target: Subject?) {
+        editing = target
+        subjectName = target?.name ?: ""
+        goalHours = target?.goalHours?.toString() ?: ""
+        selectedColors = if (target == null) {
+            listOf(Color(0xFF4F46E5), Color(0xFF8B5CF6))
+        } else {
+            listOf(Color(target.startColorArgb), Color(target.endColorArgb))
+        }
+        showAddEdit = true
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Subjects") },
+                actions = {
+                    IconButton(onClick = { openEditor(null) }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add Subject")
+                    }
+                }
+            )
+        }
+    ) { inner ->
+        if (subjects.isEmpty()) {
+            // 空态
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(inner),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(painterResource(R.drawable.img_books), null)
+                Spacer(Modifier.height(12.dp))
+                Text("You don't have any subjects.\nTap + to add one.", style = MaterialTheme.typography.bodyMedium)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(inner),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(subjects, key = { it.id ?: -1L }) { s ->
+                    SubjectRow(
+                        subject = s,
+                        onEdit = { openEditor(s) },
+                        onDelete = { toDelete = s }
+                    )
+                }
+            }
+        }
+    }
+
+    // —— Add/Edit Dialog —— //
     AddSubjectDialog(
-        isOpen = isEditSubjectDialogOpen,
+        isOpen = showAddEdit,
         subjectName = subjectName,
         goalHours = goalHours,
         onSubjectNameChange = { subjectName = it },
         onGoalHoursChange = { goalHours = it },
-        selectedColors = selectedColor,
-        onColorChange = { selectedColor = it },
-        onDismissRequest = { isEditSubjectDialogOpen = false },
+        selectedColors = selectedColors,
+        onColorChange = { selectedColors = it },
+        onDismissRequest = { showAddEdit = false },
         onConfirmButtonClick = {
-            isEditSubjectDialogOpen = false
+            val gh = goalHours.toFloatOrNull() ?: 0f
+            val model = Subject(
+                id = editing?.id,
+                name = subjectName.trim(),
+                goalHours = gh,
+                startColorArgb = selectedColors.first().toArgb(),
+                endColorArgb = selectedColors.last().toArgb()
+            )
+            vm.upsert(model)
+            showAddEdit = false
         }
     )
 
+    // —— Delete Dialog —— //
     DeleteDialog(
-        isOpen = isDeleteSubjectDialogOpen,
+        isOpen = toDelete != null,
         title = "Delete Subject?",
-        bodyText = "Are you sure, you want to delete this subject? All related " +
-                "tasks and study sessions will be permanently removed. This action can not be undone",
-        onDismissRequest = { isDeleteSubjectDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSubjectDialogOpen = false }
-    )
-
-    DeleteDialog(
-        isOpen = isDeleteSessionDialogOpen,
-        title = "Delete Session?",
-        bodyText = "Are you sure, you want to delete this session? Your studied hours will be reduced " +
-                "by this session time. This action can not be undone.",
-        onDismissRequest = { isDeleteSessionDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSessionDialogOpen = false }
-    )
-
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            SubjectScreenTopBar(
-                title = "English",
-                onBackButtonClick = { },
-                onDeleteButtonClick = { isDeleteSubjectDialogOpen = true},
-                onEditButtonClick = { isEditSubjectDialogOpen = true},
-                scrollBehavior = scrollBehavior,
-                previewMenuOpen = previewTopBarMenuOpen
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { /*TODO*/ },
-                icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add") },
-                text = { Text(text = "Add Task") },
-                expanded = isFABExpanded
-            )
+        bodyText = "All related tasks and sessions will be removed. This action cannot be undone.",
+        onDismissRequest = { toDelete = null },
+        onConfirmButtonClick = {
+            toDelete?.id?.let { vm.delete(it) }
+            toDelete = null
         }
-    ) { paddingValue ->
-        LazyColumn(
-            state = listState,
+    )
+}
+
+@Composable
+private fun SubjectRow(
+    subject: Subject,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    ElevatedCard(onClick = onEdit) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValue)
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            tasksList(
-                sectionTitle = "UPCOMING TASKS",
-                emptyListText = "You don't have any upcoming tasks.\n " +
-                        "Click the + button to add new task.",
-                tasks = tasks,
-                onCheckBoxClick = {},
-                onTaskCardClick = {}
+            SubjectCard(
+                subjectName = subject.name,
+                gradientColors = listOf(Color(subject.startColorArgb), Color(subject.endColorArgb)),
+                onClick = onEdit
             )
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-            tasksList(
-                sectionTitle = "COMPLETED TASKS",
-                emptyListText = "You don't have any completed tasks.\n " +
-                        "Click the check box on completion of task.",
-                tasks = tasks,
-                onCheckBoxClick = {},
-                onTaskCardClick = {}
-            )
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-            studySessionsList(
-                sectionTitle = "RECENT STUDY SESSIONS",
-                emptyListText = "You don't have any recent study sessions.\n " +
-                        "Start a study session to begin recording your progress.",
-                sessions = sessions,
-                onDeleteIconClick = { isDeleteSessionDialogOpen = true }
-            )
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "Edit") }
+            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "Delete") }
         }
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SubjectScreenTopBar(
-    title: String,
-    onBackButtonClick: () -> Unit,
-    onDeleteButtonClick: () -> Unit,
-    onEditButtonClick: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
-    previewMenuOpen: Boolean = false
-) {
-    val inPreview = LocalInspectionMode.current
-    var showMenu by rememberSaveable { mutableStateOf(inPreview && previewMenuOpen) }
-
-    LargeTopAppBar(
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            IconButton(onClick = onBackButtonClick) {
-                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-        },
-        title = {
-            Text(
-                text = title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.headlineSmall
-            )
-        },
-        actions = {
-            // 直接可见的操作（区别立竿见影）
-            IconButton(onClick = onEditButtonClick) {
-                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit subject")
-            }
-            IconButton(onClick = onDeleteButtonClick) {
-                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete subject")
-            }
-            // 更多
-            IconButton(onClick = { showMenu = true }) {
-                Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "More")
-            }
-            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                DropdownMenuItem(
-                    text = { Text("Rename") },
-                    onClick = { showMenu = false; onEditButtonClick() }
-                )
-                DropdownMenuItem(
-                    text = { Text("Change color") },
-                    onClick = { showMenu = false; onEditButtonClick() }
-                )
-                DropdownMenuItem(
-                    text = { Text("Edit goal hours") },
-                    onClick = { showMenu = false; onEditButtonClick() }
-                )
-                DropdownMenuItem(
-                    text = { Text("Share") },
-                    onClick = { showMenu = false /* TODO */ }
-                )
-            }
-        }
-    )
-}
-
-
-
