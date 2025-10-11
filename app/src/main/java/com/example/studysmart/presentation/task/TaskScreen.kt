@@ -256,9 +256,9 @@ fun TaskScreen(
         isOpen = isBottomSheetOpen,
         subjects = subjects,
         onDismissRequest = { isBottomSheetOpen = false },
-        onSubjectClicked = { sub ->
-            chosenSubjectId = sub.subjectId?.toLong() ?: sub.subjectId?.toLong()
-            chosenSubjectName = sub.name
+        onSubjectClicked = { subject ->
+//            chosenSubjectId = subject.subjectId.toLong()
+            chosenSubjectName = subject.name
             scope.launch { sheetState.hide() }.invokeOnCompletion {
                 if (!sheetState.isVisible) isBottomSheetOpen = false
             }
