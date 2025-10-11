@@ -1,6 +1,7 @@
 // di/NetworkModule.kt
 package com.example.studysmart.di
 import com.example.studysmart.data.remote.api.ResourcesService
+import com.example.studysmart.data.remote.api.FamousQuoteApi
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -26,4 +27,17 @@ object NetworkModule {
 
     @Provides @Singleton
     fun resourcesService(rt: Retrofit): ResourcesService = rt.create(ResourcesService::class.java)
+
+
+    @Provides @Singleton
+    fun quoteRetrofit(ok: OkHttpClient, moshi: Moshi): Retrofit =
+        Retrofit.Builder()
+            .baseUrl("https://api.quotable.io/")
+            .client(ok)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+
+    @Provides @Singleton
+    fun provideQuoteApi(quoteRetrofit: Retrofit): FamousQuoteApi =
+        quoteRetrofit.create(FamousQuoteApi::class.java)
 }
