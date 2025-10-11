@@ -49,95 +49,71 @@ import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.SubjectCard
 import com.example.studysmart.presentation.components.studySessionsList
 import com.example.studysmart.presentation.components.tasksList
-import com.example.studysmart.data.repo.sessions
-import com.example.studysmart.data.repo.subjects
-import com.example.studysmart.data.repo.tasks
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.studysmart.presentation.theme.SubjectPalettes
+import androidx.compose.runtime.collectAsState
+
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(
+    vm: DashboardViewModel = hiltViewModel()
+) {
+    // 收集 ViewModel 的 Flow
+    val subjectList by vm.subjects.collectAsState()
+    val taskList by vm.tasks.collectAsState()
+    val sessionList by vm.sessions.collectAsState()
 
     var isAddSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
     var isDeleteSessionDialogOpen by rememberSaveable { mutableStateOf(false) }
 
     var subjectName by remember { mutableStateOf("") }
     var goalHours by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(Subject.subjectCardColors.random()) }
+    var selectedColor by remember { mutableStateOf(SubjectPalettes.options.random()) } // List<Color>
 
     AddSubjectDialog(
         isOpen = isAddSubjectDialogOpen,
         subjectName = subjectName,
         goalHours = goalHours,
-        onSubjectNameChange = { subjectName = it },
-        onGoalHoursChange = { goalHours = it },
         selectedColors = selectedColor,
-        onColorChange = { selectedColor = it },
-        onDismissRequest = { isAddSubjectDialogOpen = false },
+        onSubjectNameChange = { subjectName = it },
+        onGoalHoursChange   = { goalHours = it },
+        onColorChange       = { selectedColor = it },
+        onDismissRequest    = { isAddSubjectDialogOpen = false },
         onConfirmButtonClick = {
+            // TODO: 组装一个 Subject 调用 vm.addSubject()
+            // viewModelScope 不在 Composable，建议用 LaunchedEffect 或传事件出去
             isAddSubjectDialogOpen = false
         }
     )
 
-    DeleteDialog(
-        isOpen = isDeleteSessionDialogOpen,
-        title = "Delete Session?",
-        bodyText = "Are you sure, you want to delete this session? Your studied hours will be reduced " +
-                "by this session time. This action can not be undone.",
-        onDismissRequest = { isDeleteSessionDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSessionDialogOpen = false }
-    )
-
-    Scaffold(
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
         ) {
-            item {
-                CountCardsSection(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    subjectCount = 5,
-                    studiedHours = "10",
-                    goalHours = "15"
-                )
-            }
+            // …省略上面的统计卡片…
+
             item {
                 SubjectCardsSection(
                     modifier = Modifier.fillMaxWidth(),
-                    subjectList = subjects,
+                    subjectList = subjectList,              // ✅ 用真实数据
                     onAddIconClicked = { isAddSubjectDialogOpen = true }
                 )
             }
-            item {
-                Button(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 48.dp, vertical = 20.dp)
-                ) {
-                    Text(text = "Start Study Session")
-                }
-            }
-            item { Spacer(Modifier.height(8.dp)) }
-            item { TaskFilterChips() }
+
+            // 任务
             tasksList(
                 sectionTitle = "UPCOMING TASKS",
-                emptyListText = "You don't have any upcoming tasks.\n " +
-                        "Click the + button in subject screen to add new task.",
-                tasks = tasks,
+                emptyListText = "You don't have any upcoming tasks.\nClick + to add.",
+                tasks = taskList,                          // ✅
                 onCheckBoxClick = {},
                 onTaskCardClick = {}
             )
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+
+            // 最近会话
             studySessionsList(
                 sectionTitle = "RECENT STUDY SESSIONS",
-                emptyListText = "You don't have any recent study sessions.\n " +
-                        "Start a study session to begin recording your progress.",
-                sessions = sessions,
+                emptyListText = "No recent study sessions.",
+                sessions = sessionList,                    // ✅
                 onDeleteIconClick = { isDeleteSessionDialogOpen = true }
             )
         }
@@ -225,7 +201,10 @@ private fun SubjectCardsSection(
             items(subjectList) { subject ->
                 SubjectCard(
                     subjectName = subject.name,
-                    gradientColors = subject.colors,
+                    gradientColors = listOf(
+                        Color(subject.startColorArgb),
+                        Color(subject.endColorArgb)
+                    ),
                     onClick = {}
                 )
             }

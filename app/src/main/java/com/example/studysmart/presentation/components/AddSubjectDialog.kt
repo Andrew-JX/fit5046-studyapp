@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.studysmart.domain.model.Subject
+import com.example.studysmart.presentation.theme.SubjectPalettes
 
 @Composable
 fun AddSubjectDialog(
@@ -73,15 +74,14 @@ fun AddSubjectDialog(
                             .padding(bottom = 16.dp),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        Subject.subjectCardColors.forEach { colors ->
+                        SubjectPalettes.options.forEach { colors: List<Color> ->
                             Box(
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clip(CircleShape)
                                     .border(
                                         width = 1.dp,
-                                        color = if (colors == selectedColors) Color.Black
-                                        else Color.Transparent,
+                                        color = if (colors == selectedColors) Color.Black else Color.Transparent,
                                         shape = CircleShape
                                     )
                                     .background(brush = Brush.verticalGradient(colors))
