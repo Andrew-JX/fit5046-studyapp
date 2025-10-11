@@ -53,7 +53,7 @@ fun TaskCreateEditScreen(
     // Subject BottomSheet
     val fakeSubjects = listOf(1L to "Math", 2L to "CS", 3L to "Chem")
     var subjectSheet by remember { mutableStateOf(false) }
-    var chosenSubject: Pair<Long, String>? by rememberSaveable { mutableStateOf(null) }
+    var chosenSubject: Pair<Long, String>? by rememberSaveable { mutableStateOf(fakeSubjects.first()) }
 
     // Is the date illegal (past dates)?
     val selectedDate = dateState.selectedDateMillis ?: today

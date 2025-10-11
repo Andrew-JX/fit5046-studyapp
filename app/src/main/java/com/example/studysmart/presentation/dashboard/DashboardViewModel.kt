@@ -15,6 +15,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.example.studysmart.presentation.session.SessionUi
+import com.example.studysmart.presentation.session.asUi
+
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
@@ -32,9 +35,13 @@ class DashboardViewModel @Inject constructor(
         taskRepo.observeTasks(null) // 如需按 subjectId 过滤，传 id
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val sessions: StateFlow<List<Session>> =
+    val sessions: StateFlow<List<SessionUi>> =
         sessionRepo.observeSessions()
+            .combine(subjectRepo.observeSubjects()) { sessions, subjects ->
+                sessions.map { it.asUi(subjects) }
+            }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
 
     // 事件通道 —— 和 TaskViewModel 同款
     private val _events = Channel<DashboardEvent>(Channel.BUFFERED)

@@ -11,6 +11,8 @@ data class Resource(
     val provider: String? = null,    // Platform/Source (YouTube, Coursera…)
     val note: String? = null,        // Remark
     val tags: List<String> = emptyList(),
+    val author: String? = null,      // ✅ 放在默认参数组前
+    val coverUrl: String? = null,    // ✅ 放在默认参数组前
     val isFavorite: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )

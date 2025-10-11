@@ -26,7 +26,6 @@ fun SubjectScreen(
     vm: SubjectViewModel = hiltViewModel()
 ) {
     val subjects by vm.subjects.collectAsState()
-    var selectedColor by remember { mutableStateOf(SubjectPalettes.options.first()) }
 
     // —— Dialog 状态 —— //
     var dialogOpen by remember { mutableStateOf(false) }
