@@ -28,7 +28,7 @@ import com.example.studysmart.presentation.session.SessionScreen
 import com.example.studysmart.presentation.subject.SubjectScreen
 import com.example.studysmart.presentation.task.TaskScreen
 import com.example.studysmart.presentation.auth.LoginScreen
-import com.example.studysmart.presentation.auth.SignUpViewModel
+import com.example.studysmart.presentation.auth.SignUpScreen
 import com.example.studysmart.presentation.onboarding.OnboardingScreen
 import com.example.studysmart.presentation.planner.TaskCreateEditScreen
 import com.example.studysmart.presentation.profile.ProfileScreen
@@ -46,7 +46,7 @@ sealed class Route(val route: String) {
     data object Subjects : Route("subjects")
     data object Planner : Route("planner")
     data object Resources : Route("resources")
-//    data object Tasks : Route("tasks")
+    //    data object Tasks : Route("tasks")
     data object Profile : Route("profile")
 
     // 子页
