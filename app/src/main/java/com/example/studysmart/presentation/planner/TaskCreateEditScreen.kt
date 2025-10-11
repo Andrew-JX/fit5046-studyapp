@@ -126,8 +126,7 @@ fun TaskCreateEditScreen(
                 readOnly = true,
                 label = { Text("Choose") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),                    // 锚点，避免菜单位置错位（需要 material3 1.2+）
+                    .fillMaxWidth(),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

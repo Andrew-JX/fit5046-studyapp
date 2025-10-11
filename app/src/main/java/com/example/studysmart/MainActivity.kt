@@ -18,7 +18,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                DashboardScreen()
+                Surface {
+                    TaskCreateEditScreen(
+                        onDone = {},
+                        onCancel = {}
+                    )
+                }
             }
         }
     }
