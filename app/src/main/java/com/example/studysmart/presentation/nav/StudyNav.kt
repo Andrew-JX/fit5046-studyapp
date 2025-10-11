@@ -131,7 +131,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
         ) { inner ->
             NavHost(
                 navController = nav,
-                startDestination = Route.SignUp.route,
+                startDestination = Route.Login.route,
                 modifier = Modifier.padding(inner)
             ) {
                 //
