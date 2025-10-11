@@ -4,19 +4,31 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.studysmart.data.datastore.UserPreferencesRepository
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+
 data class ProfileState(
+    val username: String = "",
+    val userEmail: String = "",
     val focusLength: Int = 25,
     val breakLength: Int = 5,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val successMessage: String? = null,
     val isSaving: Boolean = false
 )
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
 
-    // DataStore Repository
+    // Firebase Auth instance
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
+    // DataStore Repository for local preferences
     private val preferencesRepository = UserPreferencesRepository(application)
 
     // UI State
@@ -24,9 +36,32 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     val profileState: StateFlow<ProfileState> = _profileState.asStateFlow()
 
     init {
-        // Load saved preferences when ViewModel is created
-        // ViewModel 创建时加载已保存的偏好设置
+        loadUserProfile()
         loadPreferences()
+    }
+
+    private fun loadUserProfile() {
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            // 从Firebase Auth获取email
+            val email = currentUser.email ?: ""
+            // 从email生成默认用户名（或从本地存储读取）
+            val defaultUsername = email.substringBefore("@")
+
+            _profileState.value = _profileState.value.copy(
+                userEmail = email,
+                username = defaultUsername // 这里可以从DataStore读取保存的用户名
+            )
+
+            // 从本地DataStore加载保存的用户名
+            viewModelScope.launch {
+                preferencesRepository.usernameFlow.collect { savedUsername ->
+                    if (savedUsername.isNotEmpty()) {
+                        _profileState.value = _profileState.value.copy(username = savedUsername)
+                    }
+                }
+            }
+        }
     }
 
     private fun loadPreferences() {
@@ -40,6 +75,73 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun updateUsername(newUsername: String) {
+        viewModelScope.launch {
+            try {
+                _profileState.value = _profileState.value.copy(isLoading = true)
+
+                // 保存到本地DataStore
+                preferencesRepository.saveUsername(newUsername)
+
+                _profileState.value = _profileState.value.copy(
+                    username = newUsername,
+                    isLoading = false,
+                    successMessage = "Username updated successfully",
+                    error = null
+                )
+
+                // 清除成功消息
+                kotlinx.coroutines.delay(3000)
+                _profileState.value = _profileState.value.copy(successMessage = null)
+
+            } catch (e: Exception) {
+                _profileState.value = _profileState.value.copy(
+                    isLoading = false,
+                    error = "Failed to update username: ${e.message}"
+                )
+            }
+        }
+    }
+
+    fun changePassword(currentPassword: String, newPassword: String) {
+        val user = auth.currentUser ?: return
+        val email = user.email ?: return
+
+        viewModelScope.launch {
+            try {
+                _profileState.value = _profileState.value.copy(isLoading = true)
+
+                // 重新验证用户
+                val credential = EmailAuthProvider.getCredential(email, currentPassword)
+                user.reauthenticate(credential).await()
+
+                // 更新密码（这会更新Firebase Auth中的密码）
+                user.updatePassword(newPassword).await()
+
+                _profileState.value = _profileState.value.copy(
+                    isLoading = false,
+                    successMessage = "Password updated successfully",
+                    error = null
+                )
+
+                // 清除成功消息
+                kotlinx.coroutines.delay(3000)
+                _profileState.value = _profileState.value.copy(successMessage = null)
+
+            } catch (e: Exception) {
+                _profileState.value = _profileState.value.copy(
+                    isLoading = false,
+                    error = when {
+                        e.message?.contains("password is invalid") == true ->
+                            "Current password is incorrect"
+                        e.message?.contains("network") == true ->
+                            "Network error. Please check your connection"
+                        else -> "Failed to update password: ${e.message}"
+                    }
+                )
+            }
+        }
+    }
 
     fun updateFocusLength(minutes: Int) {
         viewModelScope.launch {
@@ -51,7 +153,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             _profileState.value = _profileState.value.copy(isSaving = false)
         }
     }
-
 
     fun updateBreakLength(minutes: Int) {
         viewModelScope.launch {
@@ -67,7 +168,15 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun clearPreferences() {
         viewModelScope.launch {
             preferencesRepository.clearPreferences()
+            auth.signOut()
         }
     }
-}
 
+    fun clearError() {
+        _profileState.value = _profileState.value.copy(error = null)
+    }
+
+    fun clearSuccessMessage() {
+        _profileState.value = _profileState.value.copy(successMessage = null)
+    }
+}
