@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,11 +38,13 @@ sealed class Route(val route: String) {
     data object Dashboard : Route("dashboard")
     data object Subjects : Route("subjects")
     data object Planner : Route("planner")
-    data object Resources : Route("resources")
+
     data object Tasks : Route("tasks")
+    data object Resources : Route("resources")
+    //    data object Tasks : Route("tasks")
     data object Profile : Route("profile")
 
-    // 子页
+    // å­é¡µ
     data object Session : Route("session")
     data object TaskEdit : Route("taskEdit")
 }
@@ -49,13 +52,13 @@ sealed class Route(val route: String) {
 data class BottomItem(val route: String, val label: String, val icon: ImageVector)
 
 /**
- Main app composable with navigation
-  Features:
-  - Modal Navigation Drawer for main navigation
-  - NavHost for screen routing
-  - Bottom navigation bar (optional)
-  - Authentication flow (Login → SignUp → Onboarding → Dashboard)
-  @param drawerInitiallyOpen Whether drawer should be open initially
+Main app composable with navigation
+Features:
+- Modal Navigation Drawer for main navigation
+- NavHost for screen routing
+- Bottom navigation bar (optional)
+- Authentication flow (Login â†’ SignUp â†’ Onboarding â†’ Dashboard)
+@param drawerInitiallyOpen Whether drawer should be open initially
  */
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +70,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
     )
     val scope = rememberCoroutineScope()
 
-    // 底部栏项目（保持你原来的）
+    //
 //    val bottomItems = listOf(
 //        BottomItem(Route.Dashboard.route, "Home", Icons.Filled.Home),
 //        BottomItem(Route.Subjects.route,  "Courses", Icons.Filled.MenuBook),
@@ -79,16 +82,16 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
 
-    // 登录/注册/引导页：隐藏抽屉 + 底栏
+    //
     val chromeHidden = when (currentRoute) {
         Route.Login.route, Route.SignUp.route, Route.Onboarding.route -> true
         else -> false
     }
 
-    // 抽屉标题高亮（你的 AppDrawer.kt 里应有 appDrawerItems）
+    //
     val currentTitle = appDrawerItems.firstOrNull { it.route == currentRoute }?.label ?: "StudySmart"
 
-    // 核心页面内容（上方标题 + 下方底栏 + 中间 NavHost）
+    //
     @Composable
     fun AppScaffoldContent() {
         Scaffold(
@@ -131,7 +134,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
                 startDestination = Route.SignUp.route,
                 modifier = Modifier.padding(inner)
             ) {
-                // ===== 你的路由保持不变（唯一建议：把 Planner 打开） =====
+                //
                 composable(Route.Login.route)      { LoginScreen(onLoggedIn = { nav.navigate(Route.Onboarding.route) }) }
                 composable(Route.SignUp.route)     { SignUpScreen(onSignedUp = { nav.navigate(Route.Onboarding.route) }) }
                 composable(Route.Onboarding.route) { OnboardingScreen(onFinish   = { nav.navigate(Route.Dashboard.route) }) }
@@ -140,17 +143,17 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
                 composable(Route.Subjects.route)   { SubjectScreen() }
                 composable(Route.Planner.route) { TaskScreen() }
                 composable(Route.Resources.route)  { ResourcesScreen() }
-                composable(Route.Tasks.route) { TaskScreen() }
+//                composable(Route.Tasks.route) { TaskScreen() }
                 composable(Route.Profile.route)    { ProfileScreen(onLogout = { nav.navigate(Route.Login.route) }) }
 
-                // 子页
+                //
                 composable(Route.Session.route)    { SessionScreen() }
                 composable(Route.TaskEdit.route)   { TaskCreateEditScreen(onDone = { nav.popBackStack() }) }
             }
         }
     }
 
-    // 抽屉包裹整个 App（在 login/signup/onboarding 隐藏）
+    // æŠ½å±‰åŒ…è£¹æ•´ä¸ª Appï¼ˆåœ¨ login/signup/onboarding éšè—ï¼‰
     if (chromeHidden) {
         AppScaffoldContent()
     } else {

@@ -1,5 +1,6 @@
 package com.example.studysmart.presentation.profile
 
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -179,4 +180,5 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun clearSuccessMessage() {
         _profileState.value = _profileState.value.copy(successMessage = null)
     }
+
 }
