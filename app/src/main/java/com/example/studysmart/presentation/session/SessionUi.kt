@@ -12,7 +12,7 @@ data class SessionUi(
 )
 
 fun Session.asUi(subjects: List<Subject>): SessionUi {
-    val name = subjects.firstOrNull { it.id == subjectId }?.name ?: "Unknown"
+    val name = subjects.firstOrNull { it.subjectId == subjectId }?.name ?: "Unknown"
     return SessionUi(
         id = id,
         subjectId = subjectId,

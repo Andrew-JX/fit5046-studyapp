@@ -1,5 +1,6 @@
 package com.example.studysmart.presentation.subject
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.studysmart.data.repo.SubjectRepo
@@ -45,11 +46,10 @@ class SubjectViewModel @Inject constructor(
             require(goalHours >= 0f) { "Goal hours must be >= 0" }
             repo.upsertSubject(
                 Subject(
-                    id = id,
+                    subjectId = id,
                     name = name.trim(),
                     goalHours = goalHours,
-                    startColorArgb = startColorArgb,
-                    endColorArgb = endColorArgb
+                    colors = listOf(Color(startColorArgb), Color(endColorArgb))
                 )
             )
             _events.send(SubjectEvent.Saved)

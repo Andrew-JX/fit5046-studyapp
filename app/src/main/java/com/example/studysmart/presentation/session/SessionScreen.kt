@@ -35,7 +35,7 @@ fun SessionScreen(
     // 2️⃣ UI 状态
     var selectedSubjectId by rememberSaveable { mutableStateOf<Long?>(null) }
     val selectedSubjectName = remember(subjects, selectedSubjectId) {
-        subjects.firstOrNull { it.id == selectedSubjectId }?.name ?: "Select subject"
+        subjects.firstOrNull { it.subjectId == selectedSubjectId }?.name ?: "Select subject"
     }
 
     // 3️⃣ 底部选择 / 删除确认
@@ -51,8 +51,8 @@ fun SessionScreen(
         subjects = subjects,
         onDismissRequest = { isBottomSheetOpen = false },
         onSubjectClicked = { sub ->
-            selectedSubjectId = sub.id
-            vm.selectCurrentSubject(sub.id)
+            selectedSubjectId = sub.subjectId
+            vm.selectCurrentSubject(sub.subjectId)
             scope.launch { sheetState.hide() }.invokeOnCompletion {
                 if (!sheetState.isVisible) isBottomSheetOpen = false
             }

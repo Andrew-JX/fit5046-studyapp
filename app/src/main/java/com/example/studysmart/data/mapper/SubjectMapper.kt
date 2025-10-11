@@ -11,14 +11,14 @@ fun SubjectEntity.toDomain(): Subject {
         name = this.name,
         goalHours = this.goalHours,
         colors = colors,
-        subjectId = this.id.toInt()
+        subjectId = this.id
     )
 }
 
 fun Subject.toEntity(): SubjectEntity {
     val colorKey = Subject.subjectCardColors.indexOf(colors.firstOrNull() ?: gradient1)
     return SubjectEntity(
-        id = this.subjectId.toLong(),
+        id = this.subjectId ?: 0L, //Pass 0L to Room for Auto Generated ID
         name = this.name,
         goalHours = this.goalHours,
         colorKey = colorKey

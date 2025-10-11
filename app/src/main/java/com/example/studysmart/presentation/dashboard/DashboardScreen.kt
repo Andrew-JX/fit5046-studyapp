@@ -205,10 +205,7 @@ private fun SubjectCardsSection(
             items(subjectList) { subject ->
                 SubjectCard(
                     subjectName = subject.name,
-                    gradientColors = listOf(
-                        Color(subject.startColorArgb),
-                        Color(subject.endColorArgb)
-                    ),
+                    gradientColors = subject.colors,
                     onClick = {}
                 )
             }

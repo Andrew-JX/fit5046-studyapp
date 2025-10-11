@@ -6,9 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import com.example.studysmart.presentation.dashboard.DashboardScreen
 import com.example.studysmart.presentation.task.TaskScreen
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.studysmart.presentation.planner.TaskCreateEditScreen
+import com.example.studysmart.presentation.theme.StudySmartTheme
 
 
 @AndroidEntryPoint
@@ -17,12 +19,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                Surface {
-                    TaskCreateEditScreen(
-                        onDone = {},
-                        onCancel = {}
-                    )
-                }
+//                Surface {
+//                    TaskCreateEditScreen(
+//                        onDone = {},
+//                        onCancel = {}
+//                    )
+//                }
+                StudySmartTheme { DashboardScreen() }
             }
         }
     }

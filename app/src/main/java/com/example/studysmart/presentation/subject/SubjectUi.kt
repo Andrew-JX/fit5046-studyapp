@@ -1,8 +1,9 @@
 package com.example.studysmart.presentation.subject
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.example.studysmart.domain.model.Subject
-import com.example.studysmart.presentation.util.toComposeColor
+
 
 data class SubjectUi(
     val id: Long?,
@@ -15,11 +16,11 @@ data class SubjectUi(
 
 
 fun Subject.asUi(): SubjectUi = SubjectUi(
-    id = id,
+    id = subjectId,
     name = name,
     goalHours = goalHours,
-    startColorArgb = startColorArgb,
-    endColorArgb = endColorArgb,
-    gradient = listOf(startColorArgb.toComposeColor(), endColorArgb.toComposeColor())
+    startColorArgb = colors.firstOrNull()!!.toArgb(),
+    endColorArgb = colors.lastOrNull()!!.toArgb(),
+    gradient = colors
 )
 

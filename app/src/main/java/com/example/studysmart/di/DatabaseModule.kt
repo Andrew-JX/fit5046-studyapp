@@ -3,6 +3,9 @@ package com.example.studysmart.di
 import android.content.Context
 import androidx.room.Room
 import com.example.studysmart.data.local.AppDatabase
+import com.example.studysmart.data.local.dao.ResourceDao
+import com.example.studysmart.data.local.dao.SessionDao
+import com.example.studysmart.data.local.dao.SubjectDao
 import com.example.studysmart.data.local.dao.TaskDao
 import dagger.Module
 import dagger.Provides
@@ -19,5 +22,17 @@ object DatabaseModule {
             .fallbackToDestructiveMigration() // A4 阶段可用，后期再加真实 Migration
             .build()
 
-    @Provides fun provideTaskDao(db: AppDatabase): TaskDao = db.taskDao()
+    @Provides
+    fun provideTaskDao(db: AppDatabase): TaskDao = db.taskDao()
+
+    @Provides
+    fun provideSubjectDao(db: AppDatabase): SubjectDao = db.subjectDao()
+
+    @Provides
+    fun provideSessionDao(db: AppDatabase): SessionDao = db.sessionDao()
+
+    @Provides
+    fun provideResourceDao(db: AppDatabase): ResourceDao = db.resourceDao()
+
+
 }
