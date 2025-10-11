@@ -8,6 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import com.example.studysmart.presentation.task.TaskScreen
 import dagger.hilt.android.AndroidEntryPoint
+import com.example.studysmart.presentation.planner.TaskCreateEditScreen
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -16,8 +18,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface {
-                    // 跑带 ViewModel 的 TaskScreen 测shi
-                    TaskScreen()
+                    TaskCreateEditScreen(
+                        onDone = {},
+                        onCancel = {}
+                    )
                 }
             }
         }
