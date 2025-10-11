@@ -34,7 +34,7 @@ class SubjectViewModel @Inject constructor(
 
 
     fun upsert(
-        id: Long? = null,
+        id: Long? ,
         name: String,
         goalHours: Float,
         startColorArgb: Int,
@@ -45,7 +45,7 @@ class SubjectViewModel @Inject constructor(
             require(goalHours >= 0f) { "Goal hours must be >= 0" }
             repo.upsertSubject(
                 Subject(
-                    id = id,
+                    id = id ?: 0L,
                     name = name.trim(),
                     goalHours = goalHours,
                     startColorArgb = startColorArgb,
