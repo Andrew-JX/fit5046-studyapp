@@ -5,13 +5,11 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "sessions")
 data class SessionEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long? = null,
     // Foreign key (logically associated with Subject)
     val subjectId: Long?,
-    // Redundant display name (for historical display)
-    val relatedToSubject: String,
     //Start/recording time (milliseconds)
     val dateMillis: Long,
     // Duration (minutes)
-    val durationMin: Int
+    val durationMinutes: Int
 )

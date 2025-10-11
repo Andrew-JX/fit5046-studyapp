@@ -47,37 +47,33 @@ import androidx.compose.ui.unit.sp
 import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.SubjectListBottomSheet
 import com.example.studysmart.presentation.components.studySessionsList
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.runtime.collectAsState
+import com.example.studysmart.data.repo.sessions
+import com.example.studysmart.data.repo.subjects
+import com.example.studysmart.data.repo.tasks
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SessionScreen(
-    vm: SessionViewModel = hiltViewModel()
-) {
-    val subjects by vm.subjects.collectAsState()
-    val sessions by vm.sessions.collectAsState()
+fun SessionScreen() {
 
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
     var isBottomSheetOpen by remember { mutableStateOf(false) }
+
     var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
-
-
 
     SubjectListBottomSheet(
         sheetState = sheetState,
         isOpen = isBottomSheetOpen,
-        subjects = subjects,                 // ✅ 来自 ViewModel
+        subjects = subjects,
         onDismissRequest = { isBottomSheetOpen = false },
-        onSubjectClicked = {
+        onSubjectClicked = { sub ->
+            selectedSubjectId = sub.id
             scope.launch { sheetState.hide() }.invokeOnCompletion {
                 if (!sheetState.isVisible) isBottomSheetOpen = false
             }
         }
     )
-
 
     DeleteDialog(
         isOpen = isDeleteDialogOpen,
@@ -131,8 +127,8 @@ fun SessionScreen(
                 sectionTitle = "STUDY SESSIONS HISTORY",
                 emptyListText = "You don't have any recent study sessions.\n " +
                         "Start a study session to begin recording your progress.",
-                sessions = sessions,                 // ✅ 来自 ViewModel
-                onDeleteIconClick = { isDeleteDialogOpen = true }
+                sessions = sessions,
+                onDeleteIconClick = { isDeleteDialogOpen = true}
             )
         }
     }
