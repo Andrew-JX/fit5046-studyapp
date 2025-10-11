@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/studysmart/presentation/task/TaskScreen.kt
 package com.example.studysmart.presentation.task
 
 import androidx.compose.foundation.BorderStroke
@@ -16,17 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.studysmart.data.repo.subjects // 先用假数据弹出学科底单
 import com.example.studysmart.domain.model.Task
 import com.example.studysmart.presentation.components.DeleteDialog
-import com.example.studysmart.presentation.components.SubjectListBottomSheet
 import com.example.studysmart.presentation.components.TaskCheckBox
 import com.example.studysmart.presentation.components.TaskDatePicker
 import com.example.studysmart.presentation.components.tasksList
-import com.example.studysmart.presentation.theme.Red
+import com.example.studysmart.presentation.subject.SubjectViewModel
 import com.example.studysmart.util.Priority
 import com.example.studysmart.util.changeMillisToDateString
 import kotlinx.coroutines.launch
@@ -36,15 +32,21 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskScreen(
-    vm: TaskViewModel = hiltViewModel()
+    vm: TaskViewModel = hiltViewModel(),
+    subjectVm: SubjectViewModel = hiltViewModel() // 仅用于选择学科
 ) {
-    // ===== VM data (list Flow→State)=====
+    // 任务列表
     val tasks by vm.tasks.collectAsState()
 
-    // ===== Form Status =====
+    // 学科列表（来自 Room）
+    val subjects by subjectVm.subjects.collectAsState()
+
+    // 表单状态
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedPriority by rememberSaveable { mutableStateOf(Priority.MEDIUM) }
+    var chosenSubjectId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var chosenSubjectName by rememberSaveable { mutableStateOf("Select subject") }
 
     var dueDate by rememberSaveable { mutableStateOf<Long?>(Instant.now().toEpochMilli()) }
     var isDatePickerDialogOpen by rememberSaveable { mutableStateOf(false) }
@@ -52,17 +54,14 @@ fun TaskScreen(
         initialSelectedDateMillis = dueDate ?: Instant.now().toEpochMilli()
     )
 
-    // Subject selection BottomSheet       ( Now using fake data)
+    // BottomSheet for subjects
     val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isBottomSheetOpen by remember { mutableStateOf(false) }
-    var chosenSubjectId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var chosenSubjectName by rememberSaveable { mutableStateOf("English") } // 默认显示
 
-    // 删除对话框（当前页只演示“新建”，按钮占位）
+    // 删除对话框（本页作为“新建”，保留 UI）
     var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
 
-    // check
     val taskTitleError = when {
         title.isBlank() -> "Please enter task title."
         title.length < 4 -> "Task title is too short."
@@ -70,14 +69,14 @@ fun TaskScreen(
         else -> null
     }
 
-    // Snackbar(Save the result)
+    // Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         vm.events.collect { e ->
             when (e) {
                 is TaskEvent.Saved -> {
                     snackbarHostState.showSnackbar("Saved #${e.id}")
-                    // 清表单（保留优先级与学科）
+                    // 清空表单（保留学科与优先级）
                     title = ""
                     description = ""
                     dueDate = Instant.now().toEpochMilli()
@@ -89,26 +88,31 @@ fun TaskScreen(
 
     Scaffold(
         topBar = {
-            TaskScreenTopBar(
-                isTaskExist = false, // 新建页：隐藏右上角“删除/勾选”
-                isComplete = false,
-                checkBoxBorderColor = Red,
-                onBackButtonClick = { /* TODO: navController?.popBackStack() */ },
-                onDeleteButtonClick = { isDeleteDialogOpen = true },
-                onCheckBoxClick = { /* noop */ }
+            CenterAlignedTopAppBar(
+                title = { Text("Task") },
+                navigationIcon = {
+                    IconButton(onClick = { /* nav up */ }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    // 新建页不显示删除/打勾，这里留空
+                }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-
-        // 只保留一个 LazyColumn，避免纵向滚动嵌套
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = paddingValues
         ) {
-            // ---------- The form as an item ----------
+            // —— 表单 —— //
             item {
-                Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                ) {
                     Text("Create Task", style = MaterialTheme.typography.headlineMedium)
                     Spacer(Modifier.height(12.dp))
 
@@ -217,26 +221,27 @@ fun TaskScreen(
                 }
             }
 
-            // ---------- Task list ----------
+            // —— 列表 —— //
             tasksList(
-                sectionTitle = "ALL",
+                sectionTitle = "ALL TASKS",
                 emptyListText = "No tasks yet.",
                 tasks = tasks,
-                onTaskCardClick = { /* TODO: open details */ },
+                onTaskCardClick = { /* open details if needed */ },
                 onCheckBoxClick = { t: Task ->
                     val id = t.id ?: return@tasksList
                     vm.toggleCompleted(id, !t.isCompleted)
                 }
             )
-            // Your existing tasksList will insert a section title item by itself
+
+            item { Spacer(Modifier.height(72.dp)) }
         }
     }
 
-    // ===== Dialog/popup (not in a scroll container) =====
+    // —— Dialogs —— //
     DeleteDialog(
         isOpen = isDeleteDialogOpen,
         title = "Delete Task?",
-        bodyText = "Are you sure, you want to delete this task? This action can not be undone.",
+        bodyText = "This action cannot be undone.",
         onDismissRequest = { isDeleteDialogOpen = false },
         onConfirmButtonClick = { isDeleteDialogOpen = false }
     )
@@ -251,51 +256,30 @@ fun TaskScreen(
         }
     )
 
-    SubjectListBottomSheet(
-        sheetState = sheetState,
-        isOpen = isBottomSheetOpen,
-        subjects = subjects,
-        onDismissRequest = { isBottomSheetOpen = false },
-        onSubjectClicked = { subject ->
-//            chosenSubjectId = subject.subjectId.toLong()
-            chosenSubjectName = subject.name
-            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                if (!sheetState.isVisible) isBottomSheetOpen = false
-            }
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TaskScreenTopBar(
-    isTaskExist: Boolean,
-    isComplete: Boolean,
-    checkBoxBorderColor: Color,
-    onBackButtonClick: () -> Unit,
-    onDeleteButtonClick: () -> Unit,
-    onCheckBoxClick: () -> Unit,
-) {
-    CenterAlignedTopAppBar(
-        navigationIcon = {
-            IconButton(onClick = onBackButtonClick) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-        },
-        title = { Text("Task", style = MaterialTheme.typography.titleLarge) },
-        actions = {
-            if (isTaskExist) {
-                TaskCheckBox(
-                    isComplete = isComplete,
-                    borderColor = checkBoxBorderColor,
-                    onCheckBoxClick = onCheckBoxClick
+    if (isBottomSheetOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { isBottomSheetOpen = false },
+            sheetState = sheetState
+        ) {
+            Text("Choose subject", modifier = Modifier.padding(16.dp))
+            subjects.forEach { sub ->
+                ListItem(
+                    headlineContent = { Text(sub.name) },
+                    supportingContent = { Text("${sub.goalHours} goal hrs") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            chosenSubjectId = sub.id
+                            chosenSubjectName = sub.name
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) isBottomSheetOpen = false
+                            }
+                        }
                 )
-                IconButton(onClick = onDeleteButtonClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete Task")
-                }
             }
+            Spacer(Modifier.height(24.dp))
         }
-    )
+    }
 }
 
 @Composable
