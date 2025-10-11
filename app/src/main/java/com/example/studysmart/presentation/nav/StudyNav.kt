@@ -126,7 +126,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
         ) { inner ->
             NavHost(
                 navController = nav,
-                startDestination = Route.Splash.route,
+                startDestination = Route.Login.route,
                 modifier = Modifier.padding(inner)
             ) {
                 composable(Route.Splash.route) { SplashGate(nav) }
