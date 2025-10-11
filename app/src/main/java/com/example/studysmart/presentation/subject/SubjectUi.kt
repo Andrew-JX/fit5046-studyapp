@@ -8,18 +8,13 @@ data class SubjectUi(
     val id: Long?,
     val name: String,
     val goalHours: Float,
-    val startColorArgb: Int,               // 新增
-    val endColorArgb: Int,                 // 新增
-    val gradient: List<Color>              // 保留 gradient
+    // Use directly for SubjectCard/Chip
+    val gradient: List<Color>
 )
-
 
 fun Subject.asUi(): SubjectUi = SubjectUi(
     id = id,
     name = name,
     goalHours = goalHours,
-    startColorArgb = startColorArgb,
-    endColorArgb = endColorArgb,
     gradient = listOf(startColorArgb.toComposeColor(), endColorArgb.toComposeColor())
 )
-

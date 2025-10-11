@@ -32,7 +32,6 @@ class SubjectViewModel @Inject constructor(
     private val _events = Channel<SubjectEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-
     fun upsert(
         id: Long? = null,
         name: String,

@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import com.example.studysmart.presentation.nav.StudyApp
 import com.example.studysmart.presentation.task.TaskScreen
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.studysmart.presentation.planner.TaskCreateEditScreen
@@ -22,9 +23,9 @@ class MainActivity : ComponentActivity() {
                         onDone = {},
                         onCancel = {}
                     )
+//                    StudyApp()
                 }
             }
         }
     }
 }
-
