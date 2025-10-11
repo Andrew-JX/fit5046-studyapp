@@ -76,22 +76,22 @@ fun AddSubjectDialog(
                             .padding(bottom = 16.dp),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        SubjectPalettes.options.forEach { colorSet: ColorSet ->
+                        SubjectPalettes.options.forEach { ColorSet: ColorSet ->
                             Box(
                                 modifier = Modifier
                                     .size(28.dp)
                                     .clip(CircleShape)
                                     .border(
                                         width = 1.5.dp,
-                                        color = if (colorSet == selectedColors) Color.Black else Color.Transparent,
+                                        color = if (ColorSet == selectedColors) Color.Black else Color.Transparent,
                                         shape = CircleShape
                                     )
                                     .background(
                                         brush = Brush.verticalGradient(
-                                            listOf(colorSet.start, colorSet.end)
+                                            listOf(ColorSet.start, ColorSet.end)
                                         )
                                     )
-                                    .clickable { onColorChange(colorSet) }
+                                    .clickable { onColorChange(ColorSet) }
                             )
                         }
                     }

@@ -52,6 +52,7 @@ import com.example.studysmart.presentation.components.tasksList
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.studysmart.presentation.theme.SubjectPalettes
 import androidx.compose.runtime.collectAsState
+import com.example.studysmart.presentation.subject.asUi
 
 
 @Composable
@@ -86,6 +87,30 @@ fun DashboardScreen(
         onConfirmButtonClick = {
             // TODO: 组装一个 Subject 调用 vm.addSubject()
             // viewModelScope 不在 Composable，建议用 LaunchedEffect 或传事件出去
+            // 1. 基本的输入验证
+            if (subjectName.isBlank() || goalHours.isBlank()) {
+                // 你可以在这里添加一个 Toast 或 Snackbar 提示用户输入不能为空
+                return@AddSubjectDialog
+            }
+
+            // 2. 组装 Subject 对象
+            val subject = Subject(
+                subjectId = null,
+                name = subjectName,
+                goalHours = goalHours.toFloatOrNull() ?: 0f, // 安全地转换为 Float
+                colors = listOf(selectedColor.start, selectedColor.end)
+
+            )
+
+            // 3. 通过 ViewModel 提交到数据库
+            vm.saveSubject(subject.asUiState())
+
+            // 4. (推荐) 重置状态，为下次输入做准备
+            subjectName = ""
+            goalHours = ""
+            selectedColor = SubjectPalettes.options.random()
+
+            // 5. 关闭弹窗
             isAddSubjectDialogOpen = false
         }
     )

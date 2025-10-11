@@ -55,7 +55,7 @@ class DashboardViewModel @Inject constructor(
 
             val id = subjectRepo.upsertSubject(
                 Subject(
-                    subjectId = 3,
+                    subjectId = null,
                     name = ui.name.trim(),
                     goalHours = ui.goalHours.toFloat(),   // 按你的模型改类型
                     colors = listOf(
