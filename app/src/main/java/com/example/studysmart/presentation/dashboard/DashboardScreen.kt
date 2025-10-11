@@ -39,19 +39,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 import com.example.studysmart.R
-import com.example.studysmart.domain.model.Session
 import com.example.studysmart.domain.model.Subject
-import com.example.studysmart.domain.model.Task
 import com.example.studysmart.presentation.components.AddSubjectDialog
 import com.example.studysmart.presentation.components.CountCard
 import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.SubjectCard
 import com.example.studysmart.presentation.components.studySessionsList
 import com.example.studysmart.presentation.components.tasksList
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.studysmart.presentation.theme.ColorSet
 import com.example.studysmart.presentation.theme.SubjectPalettes
-import androidx.compose.runtime.collectAsState
 
 
 @Composable
@@ -63,16 +62,13 @@ fun DashboardScreen(
     val taskList by vm.tasks.collectAsState()
     val sessionList by vm.sessions.collectAsState()
 
-
-
-
-
+    // 对话框与输入状态（保持原样式/交互）
     var isAddSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
     var isDeleteSessionDialogOpen by rememberSaveable { mutableStateOf(false) }
-
     var subjectName by remember { mutableStateOf("") }
     var goalHours by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(SubjectPalettes.options.random()) } // List<Color>
+    var selectedColor by remember { mutableStateOf(SubjectPalettes.options.random()) } // ColorSet
+
 
     AddSubjectDialog(
         isOpen = isAddSubjectDialogOpen,
@@ -84,40 +80,81 @@ fun DashboardScreen(
         onColorChange       = { selectedColor = it },
         onDismissRequest    = { isAddSubjectDialogOpen = false },
         onConfirmButtonClick = {
-            // TODO: 组装一个 Subject 调用 vm.addSubject()
-            // viewModelScope 不在 Composable，建议用 LaunchedEffect 或传事件出去
+            // TODO: 调用 vm.addSubject(...) 完成新增（此处只恢复原交互：关闭弹窗）
+            // 例如：vm.addSubject(subjectName, goalHours.toFloatOrNull() ?: 0f, selectedColor)
             isAddSubjectDialogOpen = false
+        }
+    )
+
+    DeleteDialog(
+        isOpen = isDeleteSessionDialogOpen,
+        title = "Delete Session?",
+        bodyText = "Are you sure, you want to delete this session? Your studied hours will be reduced by this session time. This action can not be undone.",
+        onDismissRequest = { isDeleteSessionDialogOpen = false },
+        onConfirmButtonClick = {
+            // TODO: 调用 vm.deleteSession(id)；这里保持与原来一致的“确认后关闭”
+            isDeleteSessionDialogOpen = false
         }
     )
 
     Scaffold { paddingValues ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(paddingValues)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            // …省略上面的统计卡片…
+            // 统计卡片（完全恢复原排版/样式）
+            item {
+                CountCardsSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    subjectCount = 5,   // 如需真实数据，可改为 subjectList.size
+                    studiedHours = "10",// 如需真实数据，可用 (sessionList.sumOf { it.durationMinutes } / 60f).toInt().toString()
+                    goalHours = "15"    // 如需真实数据，可从你的 Subject 聚合字段汇总
+                )
+            }
 
+            // Subjects 区（恢复加号按钮、空态图与文案）
             item {
                 SubjectCardsSection(
                     modifier = Modifier.fillMaxWidth(),
-                    subjectList = subjectList,              // ✅ 用真实数据
+                    subjectList = subjectList,
                     onAddIconClicked = { isAddSubjectDialogOpen = true }
                 )
             }
 
-            // 任务
+            // Start Study Session 按钮（恢复原样）
+            item {
+                Button(
+                    onClick = { /* TODO: 导航或触发开始学习会话的逻辑 */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 48.dp, vertical = 20.dp)
+                ) {
+                    Text(text = "Start Study Session")
+                }
+            }
+
+            // Chips（恢复原来的筛选控件）
+            item { Spacer(Modifier.height(8.dp)) }
+            item { TaskFilterChips() }
+
+            // Tasks（恢复原区块标题/空态文案/列表组件）
             tasksList(
                 sectionTitle = "UPCOMING TASKS",
-                emptyListText = "You don't have any upcoming tasks.\nClick + to add.",
-                tasks = taskList,                          // ✅
-                onCheckBoxClick = {},
-                onTaskCardClick = {}
+                emptyListText = "You don't have any upcoming tasks.\n Click the + button in subject screen to add new task.",
+                tasks = taskList,
+                onCheckBoxClick = { /* TODO */ },
+                onTaskCardClick = { /* TODO */ }
             )
 
-            // 最近会话
+            // Sessions（恢复原区块标题/空态文案/删除图标交互）
+            item { Spacer(modifier = Modifier.height(20.dp)) }
             studySessionsList(
                 sectionTitle = "RECENT STUDY SESSIONS",
-                emptyListText = "No recent study sessions.",
-                sessions = sessionList,                    // ✅
+                emptyListText = "You don't have any recent study sessions.\n Start a study session to begin recording your progress.",
+                sessions = sessionList,
                 onDeleteIconClick = { isDeleteSessionDialogOpen = true }
             )
         }
@@ -203,13 +240,15 @@ private fun SubjectCardsSection(
             contentPadding = PaddingValues(start = 12.dp, end = 12.dp)
         ) {
             items(subjectList) { subject ->
+                // 保持你现在的数据模型：用 ARGB 转 Color 供渐变
+                val colors = listOf(
+                    Color(subject.startColorArgb),
+                    Color(subject.endColorArgb)
+                )
                 SubjectCard(
                     subjectName = subject.name,
-                    gradientColors = listOf(
-                        Color(subject.startColorArgb),
-                        Color(subject.endColorArgb)
-                    ),
-                    onClick = {}
+                    gradientColors = colors,
+                    onClick = { /* TODO: 进入 Subject 详情 */ }
                 )
             }
         }
@@ -223,7 +262,9 @@ fun SectionHeader(
     action: (@Composable () -> Unit)? = null
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
