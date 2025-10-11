@@ -1,19 +1,5 @@
 package com.example.studysmart.presentation.auth
 
-/**
- * ViewModel for handling user authentication
- * 处理用户认证的 ViewModel
- *
- * Features:
- * - Email/password login
- * - Email/password registration
- * - Authentication state management
- * - Error handling
- *
- * @property auth Firebase Authentication instance
- * @property authState Current authentication state as Flow
- */
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth

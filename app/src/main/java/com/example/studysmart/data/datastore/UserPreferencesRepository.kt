@@ -18,6 +18,12 @@ data class UserPreferences(
     val username: String = ""
 )
 
+// ==== Onboarding Profile ====
+data class StudyProfile(
+    val major: String = "",
+    val difficulty: String = ""
+)
+
 class UserPreferencesRepository(private val context: Context) {
 
     // Keys for DataStore
@@ -25,6 +31,12 @@ class UserPreferencesRepository(private val context: Context) {
         val FOCUS_LENGTH_KEY = intPreferencesKey("focus_length")
         val BREAK_LENGTH_KEY = intPreferencesKey("break_length")
         val USERNAME_KEY = stringPreferencesKey("username")
+
+        // ==== Onboarding  ====
+        val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
+        val MAJOR = stringPreferencesKey("major")
+        val DIFFICULTY = stringPreferencesKey("difficulty")
+        val WEEKLY_TARGET_HOURS = intPreferencesKey("weekly_target_hours")
     }
 
     // Flow for user preferences
@@ -50,6 +62,21 @@ class UserPreferencesRepository(private val context: Context) {
             preferences[USERNAME_KEY] ?: ""
         }
 
+    // ==== Onboarding  ====
+    val hasSeenOnboardingFlow: Flow<Boolean> =
+        context.dataStore.data.map { it[HAS_SEEN_ONBOARDING] ?: false }
+
+    val studyProfileFlow: Flow<StudyProfile> =
+        context.dataStore.data.map { p ->
+            StudyProfile(
+                major = p[MAJOR] ?: "",
+                difficulty = p[DIFFICULTY] ?: ""
+            )
+        }
+
+    val weeklyTargetHoursFlow: Flow<Int> =
+        context.dataStore.data.map { p -> p[WEEKLY_TARGET_HOURS] ?: 10 }
+
     // Save focus length
     suspend fun saveFocusLength(minutes: Int) {
         context.dataStore.edit { preferences ->
@@ -71,10 +98,24 @@ class UserPreferencesRepository(private val context: Context) {
         }
     }
 
+    // ====  Onboarding ====
+    suspend fun setHasSeenOnboarding(seen: Boolean) {
+        context.dataStore.edit { it[HAS_SEEN_ONBOARDING] = seen }
+    }
+
+    suspend fun saveStudyProfile(major: String, difficulty: String) {
+        context.dataStore.edit {
+            it[MAJOR] = major
+            it[DIFFICULTY] = difficulty
+        }
+    }
+
+    suspend fun saveWeeklyTargetHours(hours: Int) {
+        context.dataStore.edit { it[WEEKLY_TARGET_HOURS] = hours.coerceAtLeast(0) }
+    }
+
     // Clear all preferences
     suspend fun clearPreferences() {
-        context.dataStore.edit { preferences ->
-            preferences.clear()
-        }
+        context.dataStore.edit { it.clear() }
     }
 }

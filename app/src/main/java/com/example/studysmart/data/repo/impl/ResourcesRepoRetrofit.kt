@@ -14,6 +14,7 @@ class ResourcesRepoRetrofit @Inject constructor(
         api.search(query, page).docs.map {
             Resource(
                 title = it.title ?: "(Untitled)",
+                url = "",
                 author = it.author_name?.firstOrNull(),
                 coverUrl = it.cover_i?.let { id -> "https://covers.openlibrary.org/b/id/$id-M.jpg" }
             )

@@ -29,16 +29,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.studysmart.domain.model.Subject
+import com.example.studysmart.presentation.theme.ColorSet
+import com.example.studysmart.presentation.theme.SubjectPalettes
 
 @Composable
 fun AddSubjectDialog(
     isOpen: Boolean,
-    title: String = "Add/Update Subject",
-    selectedColors: List<Color>,
+    title: String = "Add / Update Subject",
+    selectedColors: ColorSet,
     subjectName: String,
     goalHours: String,
-    onColorChange: (List<Color>) -> Unit,
+    onColorChange: (ColorSet) -> Unit,
     onSubjectNameChange: (String) -> Unit,
     onGoalHoursChange: (String) -> Unit,
     onDismissRequest: () -> Unit,
@@ -53,6 +54,7 @@ fun AddSubjectDialog(
         subjectName.length > 20 -> "Subject name is too long."
         else -> null
     }
+
     goalHoursError = when {
         goalHours.isBlank() -> "Please enter goal study hours."
         goalHours.toFloatOrNull() == null -> "Invalid number."
@@ -67,51 +69,60 @@ fun AddSubjectDialog(
             title = { Text(text = title) },
             text = {
                 Column {
+                    // ---- 颜色选择 ----
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        Subject.subjectCardColors.forEach { colors ->
+                        SubjectPalettes.options.forEach { colorSet: ColorSet ->
                             Box(
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .size(28.dp)
                                     .clip(CircleShape)
                                     .border(
-                                        width = 1.dp,
-                                        color = if (colors == selectedColors) Color.Black
-                                        else Color.Transparent,
+                                        width = 1.5.dp,
+                                        color = if (colorSet == selectedColors) Color.Black else Color.Transparent,
                                         shape = CircleShape
                                     )
-                                    .background(brush = Brush.verticalGradient(colors))
-                                    .clickable { onColorChange(colors) }
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            listOf(colorSet.start, colorSet.end)
+                                        )
+                                    )
+                                    .clickable { onColorChange(colorSet) }
                             )
                         }
                     }
+
+                    // ---- 名称输入 ----
                     OutlinedTextField(
                         value = subjectName,
                         onValueChange = onSubjectNameChange,
-                        label = { Text(text = "Subject Name") },
+                        label = { Text("Subject Name") },
                         singleLine = true,
                         isError = subjectNameError != null && subjectName.isNotBlank(),
-                        supportingText = { Text(text = subjectNameError.orEmpty())}
+                        supportingText = { Text(subjectNameError.orEmpty()) }
                     )
+
                     Spacer(modifier = Modifier.height(10.dp))
+
+                    // ---- 学习目标输入 ----
                     OutlinedTextField(
                         value = goalHours,
                         onValueChange = onGoalHoursChange,
-                        label = { Text(text = "Goal Study Hours") },
+                        label = { Text("Goal Study Hours") },
                         singleLine = true,
                         isError = goalHoursError != null && goalHours.isNotBlank(),
-                        supportingText = { Text(text = goalHoursError.orEmpty())},
+                        supportingText = { Text(goalHoursError.orEmpty()) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismissRequest) {
-                    Text(text = "Cancel")
+                    Text("Cancel")
                 }
             },
             confirmButton = {
@@ -119,7 +130,7 @@ fun AddSubjectDialog(
                     onClick = onConfirmButtonClick,
                     enabled = subjectNameError == null && goalHoursError == null
                 ) {
-                    Text(text = "Save")
+                    Text("Save")
                 }
             }
         )
