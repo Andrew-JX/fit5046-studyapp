@@ -2,6 +2,7 @@
 package com.example.studysmart.di
 import com.example.studysmart.data.repo.*
 import com.example.studysmart.data.repo.impl.ResourcesRepoRetrofit
+import com.example.studysmart.data.repo.impl.SubjectRepoRoomImpl
 import com.example.studysmart.data.repo.impl.TaskRepoRoomImpl
 import dagger.Binds
 import dagger.Module
@@ -15,7 +16,8 @@ abstract class RepoModule {
     @Binds @Singleton
     abstract fun bindTaskRepo(impl: com.example.studysmart.data.repo.impl.TaskRepoRoomImpl): TaskRepo
 
+    // === Subject：绑定到 Room 实现 ===
     @Binds @Singleton
-    abstract fun bindResourcesRepo(impl: ResourcesRepoRetrofit): ResourcesRepo
+    abstract fun bindSubjectRepo(impl: SubjectRepoRoomImpl): SubjectRepo
 
 }
