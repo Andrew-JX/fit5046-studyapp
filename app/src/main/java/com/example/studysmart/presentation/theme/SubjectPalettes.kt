@@ -3,6 +3,10 @@ package com.example.studysmart.presentation.theme
 import androidx.compose.ui.graphics.Color
 
 object SubjectPalettes {
+    fun fromArgb(startColorArgb: Any, endColorArgb: Any): List<Color>? {
+
+    }
+
     // 每个条目是一组用于渐变的颜色（上->下）
     val options: List<List<Color>> = listOf(
         listOf(Color(0xFF81E8FF), Color(0xFF4DB3FF)), // 蓝青
