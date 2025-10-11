@@ -32,7 +32,7 @@ fun TaskCreateEditScreen(
     var title by rememberSaveable { mutableStateOf("") }
     var desc by rememberSaveable { mutableStateOf("") }
 
-    // 今日 00:00（用于校验过去日期）
+    // 00:00 today (for verifying past dates)
     val today = remember {
         Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -45,17 +45,17 @@ fun TaskCreateEditScreen(
     val dateState = rememberDatePickerState(initialSelectedDateMillis = today)
     var showPicker by remember { mutableStateOf(false) }
 
-    // 优先级（用 values() 适配所有 Kotlin 版本）
+    // Priority
     val options = Priority.values()
     var expanded by remember { mutableStateOf(false) }
     var selectedPriority by rememberSaveable { mutableStateOf(Priority.MEDIUM) }
 
-    // Subject BottomSheet（占位数据）
+    // Subject BottomSheet
     val fakeSubjects = listOf(1L to "Math", 2L to "CS", 3L to "Chem")
     var subjectSheet by remember { mutableStateOf(false) }
     var chosenSubject: Pair<Long, String>? by rememberSaveable { mutableStateOf(null) }
 
-    // 日期是否非法（过去日期）
+    // Is the date illegal (past dates)?
     val selectedDate = dateState.selectedDateMillis ?: today
     val dateInvalid = selectedDate < today
 
@@ -83,7 +83,7 @@ fun TaskCreateEditScreen(
         )
 
         Spacer(Modifier.height(12.dp))
-        // 日期（只读 + 选择器）
+        // Date (read-only + selector)
         OutlinedTextField(
             value = selectedDate.changeMillisToDateString(),
             onValueChange = {},
@@ -96,7 +96,7 @@ fun TaskCreateEditScreen(
         )
 
         Spacer(Modifier.height(12.dp))
-        // 学科选择
+        // Subject selection
         OutlinedTextField(
             value = chosenSubject?.second ?: "Select subject",
             onValueChange = {},
@@ -109,7 +109,6 @@ fun TaskCreateEditScreen(
         Spacer(Modifier.height(12.dp))
         Text("Priority", style = MaterialTheme.typography.bodySmall)
 
-        // 去掉 menuAnchor()，避免老版本 material3 报错
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             OutlinedTextField(
                 value = selectedPriority.title,
@@ -139,7 +138,7 @@ fun TaskCreateEditScreen(
         Spacer(Modifier.height(24.dp))
         Button(
             onClick = {
-                // 保存前再做一次过去日期校验（双保险）
+                // Perform a past date check again before saving (double insurance)
                 if (selectedDate < today) return@Button
                 onDone(
                     TaskUiState(
@@ -160,7 +159,7 @@ fun TaskCreateEditScreen(
         }
     }
 
-    // ---- 弹层 ----
+    // ---- Show Layer ----
     if (showPicker) {
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
@@ -172,7 +171,7 @@ fun TaskCreateEditScreen(
     if (subjectSheet) {
         ModalBottomSheet(onDismissRequest = { subjectSheet = false }) {
             fakeSubjects.forEach { (id, name) ->
-                // 用 Row 代替 ListItem，避免 API 差异
+
                 Row(
                     Modifier
                         .fillMaxWidth()
