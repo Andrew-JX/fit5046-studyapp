@@ -32,7 +32,7 @@ object NetworkModule {
     @Provides @Singleton
     fun quoteRetrofit(ok: OkHttpClient, moshi: Moshi): Retrofit =
         Retrofit.Builder()
-            .baseUrl("https://api.quotable.io/")
+            .baseUrl("https://zenquotes.io/api/")
             .client(ok)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
