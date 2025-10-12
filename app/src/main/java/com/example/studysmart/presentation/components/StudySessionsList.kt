@@ -1,22 +1,12 @@
 package com.example.studysmart.presentation.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,13 +16,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.studysmart.R
-import com.example.studysmart.domain.model.Session
+import com.example.studysmart.presentation.session.SessionUi
+import java.text.SimpleDateFormat
+import java.util.*
 
 fun LazyListScope.studySessionsList(
     sectionTitle: String,
     emptyListText: String,
-    sessions: List<Session>,
-    onDeleteIconClick: (Session) -> Unit
+    sessions: List<SessionUi>,
+    onDeleteIconClick: (SessionUi) -> Unit
 ) {
     item {
         Text(
@@ -41,6 +33,7 @@ fun LazyListScope.studySessionsList(
             modifier = Modifier.padding(12.dp)
         )
     }
+
     if (sessions.isEmpty()) {
         item {
             Column(
@@ -62,7 +55,8 @@ fun LazyListScope.studySessionsList(
             }
         }
     }
-    items(sessions) { session ->
+
+    items(sessions, key = { it.id ?: it.hashCode().toLong() }) { session ->
         StudySessionCard(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
             session = session,
@@ -74,33 +68,31 @@ fun LazyListScope.studySessionsList(
 @Composable
 private fun StudySessionCard(
     modifier: Modifier = Modifier,
-    session: Session,
+    session: SessionUi,
     onDeleteIconClick: () -> Unit
 ) {
-    Card(
-        modifier = modifier
-    ) {
+    Card(modifier = modifier) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
+            Column {
                 Text(
-                    text = session.relatedToSubject,
+                    text = session.subjectName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = "${session.date}",
+                    text = formatDate(session.dateMillis),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "${session.duration} hr",
+                text = "${session.durationMinutes} min",
                 style = MaterialTheme.typography.titleMedium
             )
             IconButton(onClick = onDeleteIconClick) {
@@ -111,4 +103,10 @@ private fun StudySessionCard(
             }
         }
     }
+}
+
+// 工具函数：格式化时间
+private fun formatDate(millis: Long): String {
+    val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    return sdf.format(Date(millis))
 }
