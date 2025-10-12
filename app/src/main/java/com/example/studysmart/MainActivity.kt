@@ -10,6 +10,7 @@ import com.example.studysmart.presentation.task.TaskScreen
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.studysmart.presentation.planner.TaskCreateEditScreen
 import com.example.studysmart.presentation.dashboard.DashboardScreen
+import com.example.studysmart.presentation.nav.StudyApp
 
 
 @AndroidEntryPoint
@@ -19,13 +20,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface {
-                    TaskCreateEditScreen(
-                        onDone = {},
-                        onCancel = {}
-                    )
+                    StudyApp()  // ← 改成这个
                 }
             }
         }
     }
 }
-
