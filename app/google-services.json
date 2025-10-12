@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "572560247165",
+    "project_id": "studysmart-233a9",
+    "storage_bucket": "studysmart-233a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:572560247165:android:a5eece5356a596b580e414",
+        "android_client_info": {
+          "package_name": "com.example.studysmart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaormenmi5kpFowo04e4ODZBEZywFmLPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

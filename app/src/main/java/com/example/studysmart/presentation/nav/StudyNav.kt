@@ -46,7 +46,7 @@ sealed class Route(val route: String) {
     data object Subjects : Route("subjects")
     data object Planner : Route("planner")
     data object Resources : Route("resources")
-//    data object Tasks : Route("tasks")
+    //    data object Tasks : Route("tasks")
     data object Profile : Route("profile")
 
     // 子页
@@ -227,4 +227,3 @@ private fun SplashGate(nav: NavHostController) {
         CircularProgressIndicator()
     }
 }
-

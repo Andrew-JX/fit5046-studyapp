@@ -55,15 +55,12 @@ class DashboardViewModel @Inject constructor(
 
             val id = subjectRepo.upsertSubject(
                 Subject(
-                    subjectId = null,
+                    id = ui.id?: 0L,
                     name = ui.name.trim(),
                     goalHours = ui.goalHours.toFloat(),   // 按你的模型改类型
-                    colors = listOf(
-                    Color(ui.colors.firstOrNull()?.value?.toInt() ?: 0xFF81E8FF.toInt()),
-                    Color(ui.colors.lastOrNull()?.value?.toInt() ?: 0xFF4DB3FF.toInt())
+                    startColorArgb = ui.colors.firstOrNull()?.value?.toInt() ?: 0xFF81E8FF.toInt(),
+                    endColorArgb = ui.colors.lastOrNull()?.value?.toInt() ?: 0xFF4DB3FF.toInt()
                 )
-
-            )
             )
             _events.send(DashboardEvent.SubjectSaved(id))
         } catch (e: Exception) {
