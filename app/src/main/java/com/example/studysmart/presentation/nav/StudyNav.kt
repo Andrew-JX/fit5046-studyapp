@@ -129,9 +129,8 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
                 startDestination = Route.Login.route,
                 modifier = Modifier.padding(inner)
             ) {
-                composable(Route.Splash.route) { SplashGate(nav) }
 
-                // ===== 你的路由保持不变（唯一建议：把 Planner 打开） =====
+                composable(Route.Splash.route) { SplashGate(nav) }
                 composable(Route.Login.route)      { LoginScreen(onLoggedIn = { nav.navigate(Route.Onboarding.route) }) }
                 composable(Route.SignUp.route)     { SignUpScreen(onSignedUp = { nav.navigate(Route.Onboarding.route) }) }
                 composable(Route.Onboarding.route) { OnboardingScreen(onFinish   = { nav.navigate(Route.Dashboard.route) }) }
