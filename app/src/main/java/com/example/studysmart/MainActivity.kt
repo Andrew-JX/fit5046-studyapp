@@ -14,6 +14,8 @@ import com.example.studysmart.presentation.planner.TaskCreateEditScreen
 import com.example.studysmart.presentation.dashboard.DashboardScreen
 import com.example.studysmart.presentation.profile.ProfileScreen
 import com.example.studysmart.presentation.nav.StudyApp
+import com.example.studysmart.presentation.session.SessionScreen
+import com.example.studysmart.presentation.subject.SubjectScreen
 
 
 @AndroidEntryPoint
@@ -22,16 +24,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
+                SessionScreen()
+//                SubjectScreen()
 //                 StudyApp()
 //               TaskScreen()
- //              DashboardScreen()
+//               DashboardScreen()
 //               TaskCreateEditScreen( onDone = {}, onCancel = {} )
 //                ProfileScreen {  }
-                LoginScreen(
-                    onLoggedIn = {
-                        Toast.makeText(this, "Login success ✅", Toast.LENGTH_SHORT).show()
-                    }
-                )
+//                LoginScreen(
+//                    onLoggedIn = {
+//                        Toast.makeText(this, "Login success ✅", Toast.LENGTH_SHORT).show()
+//                    }
+//                )
             }
         }
     }

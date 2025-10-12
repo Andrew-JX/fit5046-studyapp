@@ -51,6 +51,9 @@ import com.example.studysmart.presentation.components.studySessionsList
 import com.example.studysmart.presentation.components.tasksList
 import com.example.studysmart.presentation.theme.ColorSet
 import com.example.studysmart.presentation.theme.SubjectPalettes
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+
 
 
 @Composable
@@ -68,6 +71,8 @@ fun DashboardScreen(
     var subjectName by remember { mutableStateOf("") }
     var goalHours by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(SubjectPalettes.options.random()) } // ColorSet
+    val scope = rememberCoroutineScope()
+
 
 
     AddSubjectDialog(
@@ -80,11 +85,24 @@ fun DashboardScreen(
         onColorChange       = { selectedColor = it },
         onDismissRequest    = { isAddSubjectDialogOpen = false },
         onConfirmButtonClick = {
-            // TODO: 调用 vm.addSubject(...) 完成新增（此处只恢复原交互：关闭弹窗）
-            // 例如：vm.addSubject(subjectName, goalHours.toFloatOrNull() ?: 0f, selectedColor)
-            isAddSubjectDialogOpen = false
+            val ui = SubjectUiState(
+                name = subjectName.trim(),
+                goalHours = goalHours,
+                colors = listOf(
+                    selectedColor.start,
+                    selectedColor.end
+                )
+            )
+            scope.launch {
+                vm.saveSubject(ui)      // ← 真正保存
+                // 清空并关闭
+                subjectName = ""
+                goalHours = ""
+                isAddSubjectDialogOpen = false
+            }
         }
     )
+
 
     DeleteDialog(
         isOpen = isDeleteSessionDialogOpen,
@@ -109,7 +127,7 @@ fun DashboardScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp),
-                    subjectCount = 5,   // 如需真实数据，可改为 subjectList.size
+                    subjectCount = subjectList.size,   // 如需真实数据，可改为 subjectList.size
                     studiedHours = "10",// 如需真实数据，可用 (sessionList.sumOf { it.durationMinutes } / 60f).toInt().toString()
                     goalHours = "15"    // 如需真实数据，可从你的 Subject 聚合字段汇总
                 )

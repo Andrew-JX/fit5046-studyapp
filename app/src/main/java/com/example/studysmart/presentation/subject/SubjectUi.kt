@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 import com.example.studysmart.domain.model.Subject
 
 data class SubjectUi(
-    val id: Long,
+    val id: Long?,
     val name: String,
     val goalHours: Float,
     val startColorArgb: Int,

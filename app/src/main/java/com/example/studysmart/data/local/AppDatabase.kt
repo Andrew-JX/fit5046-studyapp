@@ -12,7 +12,7 @@ import com.example.studysmart.data.local.entity.*
         ResourceEntity::class
     ],
     version = 2,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
