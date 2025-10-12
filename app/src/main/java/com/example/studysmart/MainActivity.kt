@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.studysmart.presentation.planner.TaskCreateEditScreen
 import com.example.studysmart.presentation.dashboard.DashboardScreen
 import com.example.studysmart.presentation.profile.ProfileScreen
+import com.example.studysmart.presentation.nav.StudyApp
 
 
 @AndroidEntryPoint
@@ -21,8 +22,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
+//                 StudyApp()
 //               TaskScreen()
-//               DashboardScreen()
+ //              DashboardScreen()
 //               TaskCreateEditScreen( onDone = {}, onCancel = {} )
 //                ProfileScreen {  }
                 LoginScreen(

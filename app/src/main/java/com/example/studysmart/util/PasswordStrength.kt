@@ -19,3 +19,19 @@ fun calcStrength(pw: String): Strength {
         else -> Strength.STRONG
     }
 }
+/**
+ * 验证邮箱格式
+ */
+fun isValidEmail(email: String): Boolean {
+    if (email.isBlank()) return false
+    val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".toRegex()
+    return email.matches(emailRegex)
+}
+
+/**
+ * 验证密码格式
+ * 要求：至少8个字符
+ */
+fun isValidPassword(password: String): Boolean {
+    return password.length >= 8
+}
