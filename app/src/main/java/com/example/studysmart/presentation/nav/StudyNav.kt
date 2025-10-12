@@ -126,11 +126,12 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
         ) { inner ->
             NavHost(
                 navController = nav,
-                startDestination = Route.Login.route,
+                startDestination = Route.Splash.route,
                 modifier = Modifier.padding(inner)
             ) {
-
                 composable(Route.Splash.route) { SplashGate(nav) }
+
+                // ===== 你的路由保持不变（唯一建议：把 Planner 打开） =====
                 composable(Route.Login.route)      { LoginScreen(onLoggedIn = { nav.navigate(Route.Onboarding.route) }) }
                 composable(Route.SignUp.route)     { SignUpScreen(onSignedUp = { nav.navigate(Route.Onboarding.route) }) }
                 composable(Route.Onboarding.route) { OnboardingScreen(onFinish   = { nav.navigate(Route.Dashboard.route) }) }
@@ -226,4 +227,3 @@ private fun SplashGate(nav: NavHostController) {
         CircularProgressIndicator()
     }
 }
-
