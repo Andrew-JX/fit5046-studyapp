@@ -27,6 +27,6 @@ fun TaskDatePicker(
         dismissButton = { TextButton(onClick = onDismissRequest) { Text(dismissButtonText) } },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        DatePicker(state = state)   // ✅ 不再传 selectableDates
+        DatePicker(state = state)
     }
 }
