@@ -1,225 +1,210 @@
 package com.example.studysmart.presentation.subject
 
-
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.studysmart.domain.model.Subject
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.studysmart.presentation.components.AddSubjectDialog
-
 import com.example.studysmart.presentation.components.DeleteDialog
-import com.example.studysmart.presentation.components.studySessionsList
-import com.example.studysmart.presentation.components.tasksList
-import com.example.studysmart.data.repo.sessions
-import com.example.studysmart.data.repo.subjects
-import com.example.studysmart.data.repo.tasks
+import com.example.studysmart.presentation.theme.SubjectPalettes
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubjectScreen(previewTopBarMenuOpen: Boolean = false ) {
+fun SubjectScreen(
+    vm: SubjectViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
+) {
+    val subjects by vm.subjects.collectAsState()
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val listState = rememberLazyListState()
-    val isFABExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
+    // —— Dialog 状态 —— //
+    var dialogOpen by remember { mutableStateOf(false) }
+    var deleteOpen by remember { mutableStateOf(false) }
+    var editingId by remember { mutableStateOf<Long?>(null) }
 
-    var isEditSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
-    var isDeleteSubjectDialogOpen by rememberSaveable { mutableStateOf(false) }
-    var isDeleteSessionDialogOpen by rememberSaveable { mutableStateOf(false) }
-
+    // 表单字段
     var subjectName by remember { mutableStateOf("") }
-    var goalHours by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(Subject.subjectCardColors.random()) }
+    var goalHoursText by remember { mutableStateOf("") }
+    var selectedColor by remember { mutableStateOf(SubjectPalettes.options.first()) }
 
-    AddSubjectDialog(
-        isOpen = isEditSubjectDialogOpen,
-        subjectName = subjectName,
-        goalHours = goalHours,
-        onSubjectNameChange = { subjectName = it },
-        onGoalHoursChange = { goalHours = it },
-        selectedColors = selectedColor,
-        onColorChange = { selectedColor = it },
-        onDismissRequest = { isEditSubjectDialogOpen = false },
-        onConfirmButtonClick = {
-            isEditSubjectDialogOpen = false
+    fun openForCreate() {
+        editingId = null
+        subjectName = ""
+        goalHoursText = "0"
+        selectedColor = SubjectPalettes.options.first()
+        dialogOpen = true
+    }
+
+    fun openForEdit(s: SubjectUi) {
+        editingId = s.id
+        subjectName = s.name
+        goalHoursText = s.goalHours.toString()
+        selectedColor = SubjectPalettes.fromArgb(s.startColorArgb, s.endColorArgb)
+            ?: SubjectPalettes.options.first()
+        dialogOpen = true
+    }
+
+    // —— Scaffold —— //
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) {
+        vm.events.collect { ev ->
+            when (ev) {
+                is SubjectEvent.Saved   -> snackbar.showSnackbar("Saved")
+                is SubjectEvent.Deleted -> snackbar.showSnackbar("Deleted")
+                is SubjectEvent.Error   -> snackbar.showSnackbar(ev.message)
+            }
         }
-    )
-
-    DeleteDialog(
-        isOpen = isDeleteSubjectDialogOpen,
-        title = "Delete Subject?",
-        bodyText = "Are you sure, you want to delete this subject? All related " +
-                "tasks and study sessions will be permanently removed. This action can not be undone",
-        onDismissRequest = { isDeleteSubjectDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSubjectDialogOpen = false }
-    )
-
-    DeleteDialog(
-        isOpen = isDeleteSessionDialogOpen,
-        title = "Delete Session?",
-        bodyText = "Are you sure, you want to delete this session? Your studied hours will be reduced " +
-                "by this session time. This action can not be undone.",
-        onDismissRequest = { isDeleteSessionDialogOpen = false },
-        onConfirmButtonClick = { isDeleteSessionDialogOpen = false }
-    )
+    }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            SubjectScreenTopBar(
-                title = "English",
-                onBackButtonClick = { },
-                onDeleteButtonClick = { isDeleteSubjectDialogOpen = true},
-                onEditButtonClick = { isEditSubjectDialogOpen = true},
-                scrollBehavior = scrollBehavior,
-                previewMenuOpen = previewTopBarMenuOpen
+            LargeTopAppBar(title = { Text("Subjects") })
+            CenterAlignedTopAppBar(
+                title = { Text("Subjects") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
             )
         },
+        snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { /*TODO*/ },
-                icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add") },
-                text = { Text(text = "Add Task") },
-                expanded = isFABExpanded
+                onClick = { openForCreate() },
+                icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
+                text = { Text("Add Subject") }
             )
         }
-    ) { paddingValue ->
-        LazyColumn(
-            state = listState,
+    ) { padding ->
+        if (subjects.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                Text("No subjects yet. Tap + to add.")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                items(subjects, key = { it.id ?: it.hashCode().toLong() }) { s ->
+                    SubjectRow(
+                        subject = s,
+                        onClick = { openForEdit(s) },
+                        onEdit = { openForEdit(s) },
+                        onDelete = {
+                            editingId = s.id
+                            deleteOpen = true
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    // —— 新增/编辑对话框 —— //
+    AddSubjectDialog(
+        isOpen = dialogOpen,
+        subjectName = subjectName,
+        goalHours = goalHoursText,
+        selectedColors = selectedColor,
+        onSubjectNameChange = { subjectName = it },
+        onGoalHoursChange = { goalHoursText = it },
+        onColorChange = { selectedColor = it },
+        onDismissRequest = { dialogOpen = false },
+        onConfirmButtonClick = {
+            val gh = goalHoursText.toFloatOrNull() ?: 0f
+            vm.upsert(
+                id = editingId,
+                name = subjectName,
+                goalHours = gh,
+                startColorArgb = selectedColor.start.toArgb(),
+                endColorArgb = selectedColor.end.toArgb()
+            )
+            dialogOpen = false
+        }
+    )
+
+    // —— 删除对话框 —— //
+    DeleteDialog(
+        isOpen = deleteOpen,
+        title = "Delete Subject?",
+        bodyText = "All related tasks and study sessions will be removed. This cannot be undone.",
+        onDismissRequest = { deleteOpen = false },
+        onConfirmButtonClick = {
+            editingId?.let { vm.delete(it) }
+            deleteOpen = false
+        }
+    )
+}
+
+/** 简单的行卡片：显示名称 + 溢出菜单（编辑、删除） */
+@Composable
+private fun SubjectRow(
+    subject: SubjectUi,
+    onClick: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    var menuOpen by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .clickable { onClick() }
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValue)
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            tasksList(
-                sectionTitle = "UPCOMING TASKS",
-                emptyListText = "You don't have any upcoming tasks.\n " +
-                        "Click the + button to add new task.",
-                tasks = tasks,
-                onCheckBoxClick = {},
-                onTaskCardClick = {}
-            )
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = subject.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Goal: ${subject.goalHours} h",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
-            tasksList(
-                sectionTitle = "COMPLETED TASKS",
-                emptyListText = "You don't have any completed tasks.\n " +
-                        "Click the check box on completion of task.",
-                tasks = tasks,
-                onCheckBoxClick = {},
-                onTaskCardClick = {}
-            )
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
+            Box {
+                IconButton(onClick = { menuOpen = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+                }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = { menuOpen = false; onEdit() },
+                        leadingIcon = { Icon(Icons.Default.Edit, null) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = { menuOpen = false; onDelete() },
+                        leadingIcon = { Icon(Icons.Default.Delete, null) }
+                    )
+                }
             }
-            studySessionsList(
-                sectionTitle = "RECENT STUDY SESSIONS",
-                emptyListText = "You don't have any recent study sessions.\n " +
-                        "Start a study session to begin recording your progress.",
-                sessions = sessions,
-                onDeleteIconClick = { isDeleteSessionDialogOpen = true }
-            )
         }
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SubjectScreenTopBar(
-    title: String,
-    onBackButtonClick: () -> Unit,
-    onDeleteButtonClick: () -> Unit,
-    onEditButtonClick: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
-    previewMenuOpen: Boolean = false
-) {
-    val inPreview = LocalInspectionMode.current
-    var showMenu by rememberSaveable { mutableStateOf(inPreview && previewMenuOpen) }
-
-    LargeTopAppBar(
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            IconButton(onClick = onBackButtonClick) {
-                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-        },
-        title = {
-            Text(
-                text = title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.headlineSmall
-            )
-        },
-        actions = {
-            // 直接可见的操作（区别立竿见影）
-            IconButton(onClick = onEditButtonClick) {
-                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit subject")
-            }
-            IconButton(onClick = onDeleteButtonClick) {
-                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete subject")
-            }
-            // 更多
-            IconButton(onClick = { showMenu = true }) {
-                Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "More")
-            }
-            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                DropdownMenuItem(
-                    text = { Text("Rename") },
-                    onClick = { showMenu = false; onEditButtonClick() }
-                )
-                DropdownMenuItem(
-                    text = { Text("Change color") },
-                    onClick = { showMenu = false; onEditButtonClick() }
-                )
-                DropdownMenuItem(
-                    text = { Text("Edit goal hours") },
-                    onClick = { showMenu = false; onEditButtonClick() }
-                )
-                DropdownMenuItem(
-                    text = { Text("Share") },
-                    onClick = { showMenu = false /* TODO */ }
-                )
-            }
-        }
-    )
-}
-
-
-
