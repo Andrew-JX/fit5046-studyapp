@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import com.example.studysmart.presentation.session.SessionUi
 import com.example.studysmart.presentation.session.asUi
+import androidx.compose.ui.graphics.toArgb
 
 
 @HiltViewModel
@@ -47,24 +48,28 @@ class DashboardViewModel @Inject constructor(
     private val _events = Channel<DashboardEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    // 保存/更新 Subject（与 TaskViewModel.save 一样的 try/catch + Channel 通知）
     fun saveSubject(ui: SubjectUiState) = viewModelScope.launch {
         try {
             require(ui.name.isNotBlank()) { "Subject name is required" }
-            require(ui.goalHours.toFloatOrNull() != null) { "Goal hours must be a number" }
+            val goal = ui.goalHours.toFloatOrNull()
+                ?: error("Goal hours must be a number")
+
+            // 从 UI 颜色取 ARGB；给出兜底颜色（可按你主题替换）
+            val start = ui.colors.firstOrNull()?.toArgb() ?: 0xFF81E8FF.toInt()
+            val end   = ui.colors.lastOrNull()?.toArgb()  ?: 0xFF4DB3FF.toInt()
 
             val id = subjectRepo.upsertSubject(
                 Subject(
-                    id = ui.id?: 0L,
+                    id = ui.id,                 // ★ 新建时就是 null，Room 自动生成
                     name = ui.name.trim(),
-                    goalHours = ui.goalHours.toFloat(),   // 按你的模型改类型
-                    startColorArgb = ui.colors.firstOrNull()?.value?.toInt() ?: 0xFF81E8FF.toInt(),
-                    endColorArgb = ui.colors.lastOrNull()?.value?.toInt() ?: 0xFF4DB3FF.toInt()
+                    goalHours = goal,
+                    startColorArgb = start,
+                    endColorArgb = end
                 )
             )
-            _events.send(DashboardEvent.SubjectSaved(id))
+            _events.trySend(DashboardEvent.SubjectSaved(id))
         } catch (e: Exception) {
-            _events.send(DashboardEvent.Error(e.message ?: "Save subject failed"))
+            _events.trySend(DashboardEvent.Error(e.message ?: "Save subject failed"))
         }
     }
 

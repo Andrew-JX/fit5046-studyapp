@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "subjects")
 data class SubjectEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Long,
+    val id: Long? = null,
     val name: String,
     val goalHours: Float,
     val startColorArgb: Int,

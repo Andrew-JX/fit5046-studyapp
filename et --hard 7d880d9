@@ -1,0 +1,23 @@
+[33m788acc1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/firebase-auth[m[33m)[m HEAD@{0}: commit (merge): Merge V3: resolve conflicts in AuthScreens and MainActivity
+[33m7d880d9[m HEAD@{1}: checkout: moving from V3 to feature/firebase-auth
+[33mf27ce03[m[33m ([m[1;31morigin/V3[m[33m, [m[1;32mV3[m[33m)[m HEAD@{2}: checkout: moving from feature/firebase-auth to V3
+[33m7d880d9[m HEAD@{3}: commit: Update StudyNav before merging V3
+[33m2671fe6[m[33m ([m[1;31morigin/feature/firebase-auth[m[33m)[m HEAD@{4}: commit: Add Firebase Auth dependencies back after merge conflict resolution
+[33mdf162c0[m HEAD@{5}: commit (merge): Resolve merge conflicts and integrate Firebase Auth UI
+[33mbb4b90c[m HEAD@{6}: checkout: moving from V1 to feature/firebase-auth
+[33m1404aa4[m[33m ([m[1;32mV1[m[33m)[m HEAD@{7}: pull origin V1: Fast-forward
+[33m4fd020c[m HEAD@{8}: checkout: moving from feature/firebase-auth to V1
+[33mbb4b90c[m HEAD@{9}: commit: feat: Add user profile management with username/password modification
+[33mc92f5e7[m HEAD@{10}: checkout: moving from V1 to feature/firebase-auth
+[33m4fd020c[m HEAD@{11}: reset: moving to HEAD
+[33m4fd020c[m HEAD@{12}: checkout: moving from V1 to V1
+[33m4fd020c[m HEAD@{13}: reset: moving to HEAD
+[33m4fd020c[m HEAD@{14}: checkout: moving from feature/firebase-auth to V1
+[33mc92f5e7[m HEAD@{15}: checkout: moving from feature/firebase-auth to feature/firebase-auth
+[33mc92f5e7[m HEAD@{16}: commit: Add comprehensive code documentation
+[33m6aed425[m HEAD@{17}: commit: Implement DataStore for user preferences
+[33m2f8beb5[m HEAD@{18}: commit: Add Firebase Authentication with Login/SignUp screens
+[33mb4eef97[m[33m ([m[1;32mUI_Design[m[33m)[m HEAD@{19}: checkout: moving from UI_Design to feature/firebase-auth
+[33mb4eef97[m[33m ([m[1;32mUI_Design[m[33m)[m HEAD@{20}: pull origin UI_Design: Fast-forward
+[33m95e8af0[m HEAD@{21}: reset: moving to HEAD
+[33m95e8af0[m HEAD@{22}: clone: from https://github.com/Andrew-JX/fit5046-studyapp.git

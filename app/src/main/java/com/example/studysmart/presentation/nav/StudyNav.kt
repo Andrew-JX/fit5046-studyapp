@@ -1,6 +1,8 @@
 // app/src/main/java/com/example/studysmart/presentation/nav/StudyNav.kt
 package com.example.studysmart.presentation.nav
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -12,12 +14,15 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.studysmart.presentation.AppDrawer.appDrawerItems
+import com.example.studysmart.presentation.auth.AuthViewModel
 import com.example.studysmart.presentation.dashboard.DashboardScreen
 import com.example.studysmart.presentation.session.SessionScreen
 import com.example.studysmart.presentation.subject.SubjectScreen
@@ -31,6 +36,8 @@ import com.example.studysmart.presentation.resources.ResourcesScreen
 import kotlinx.coroutines.launch
 
 sealed class Route(val route: String) {
+    data object Splash : Route("splash")
+
     data object Login : Route("login")
     data object SignUp : Route("signup")
     data object Onboarding : Route("onboarding")
@@ -39,7 +46,7 @@ sealed class Route(val route: String) {
     data object Subjects : Route("subjects")
     data object Planner : Route("planner")
     data object Resources : Route("resources")
-//    data object Tasks : Route("tasks")
+    //    data object Tasks : Route("tasks")
     data object Profile : Route("profile")
 
     // 子页
@@ -119,9 +126,11 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
         ) { inner ->
             NavHost(
                 navController = nav,
-                startDestination = Route.Dashboard.route,
+                startDestination = Route.Splash.route,
                 modifier = Modifier.padding(inner)
             ) {
+                composable(Route.Splash.route) { SplashGate(nav) }
+
                 // ===== 你的路由保持不变（唯一建议：把 Planner 打开） =====
                 composable(Route.Login.route)      { LoginScreen(onLoggedIn = { nav.navigate(Route.Onboarding.route) }) }
                 composable(Route.SignUp.route)     { SignUpScreen(onSignedUp = { nav.navigate(Route.Onboarding.route) }) }
@@ -175,5 +184,46 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
         ) {
             AppScaffoldContent()
         }
+    }
+}
+
+@Composable
+private fun SplashGate(nav: NavHostController) {
+    // 读登录状态
+    val authVm: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val authState by authVm.authState.collectAsState()
+
+    // 读是否看过 Onboarding（DataStore）
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val prefsRepo = remember(ctx) { com.example.studysmart.data.datastore.UserPreferencesRepository(ctx) }
+    val hasSeen by prefsRepo.hasSeenOnboardingFlow.collectAsState(initial = false)
+
+    // 根据状态决定跳转
+    LaunchedEffect(authState.currentUser, hasSeen) {
+        when {
+            authState.currentUser == null -> {
+                nav.navigate(Route.Login.route) {
+                    popUpTo(Route.Splash.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+            hasSeen -> {
+                nav.navigate(Route.Dashboard.route) {
+                    popUpTo(Route.Splash.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+            else -> {
+                nav.navigate(Route.Onboarding.route) {
+                    popUpTo(Route.Splash.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+    }
+
+    // 简单过渡 UI
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
     }
 }
