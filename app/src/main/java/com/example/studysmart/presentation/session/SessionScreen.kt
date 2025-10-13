@@ -24,7 +24,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionScreen(
-    vm: SessionViewModel = hiltViewModel()
+    vm: SessionViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
     // 1️⃣ 从 VM 获取数据
     val subjects by vm.subjects.collectAsState()
@@ -76,7 +77,7 @@ fun SessionScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Study Sessions", style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
-                    IconButton(onClick = { /* TODO: navBack */ }) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },

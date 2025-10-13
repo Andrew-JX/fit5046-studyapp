@@ -22,18 +22,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-//                 StudyApp()
+                 StudyApp()
 //               TaskScreen()
  //              DashboardScreen()
 //               TaskCreateEditScreen( onDone = {}, onCancel = {} )
 //                ProfileScreen {  }
-                LoginScreen(
-                    onLoggedIn = {
+ //               LoginScreen(
+ //                   onLoggedIn = {
                         Toast.makeText(this, "Login success ✅", Toast.LENGTH_SHORT).show()
                     }
-                )
+ //               )
             }
         }
     }
-}
+//}
 
