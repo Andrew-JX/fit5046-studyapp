@@ -24,8 +24,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                SessionScreen()
-//                SubjectScreen()
+//                SessionScreen()
+                SubjectScreen()
 //                 StudyApp()
 //               TaskScreen()
 //               DashboardScreen()
