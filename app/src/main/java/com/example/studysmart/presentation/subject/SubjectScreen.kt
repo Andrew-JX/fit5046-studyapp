@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
@@ -23,7 +24,8 @@ import com.example.studysmart.presentation.theme.SubjectPalettes
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectScreen(
-    vm: SubjectViewModel = hiltViewModel()
+    vm: SubjectViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
     val subjects by vm.subjects.collectAsState()
 
@@ -69,6 +71,14 @@ fun SubjectScreen(
     Scaffold(
         topBar = {
             LargeTopAppBar(title = { Text("Subjects") })
+            CenterAlignedTopAppBar(
+                title = { Text("Subjects") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
         },
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {

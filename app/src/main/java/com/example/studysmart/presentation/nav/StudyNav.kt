@@ -65,92 +65,123 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
     )
     val scope = rememberCoroutineScope()
 
-    // 底部栏项目（保持你原来的）
-//    val bottomItems = listOf(
-//        BottomItem(Route.Dashboard.route, "Home", Icons.Filled.Home),
-//        BottomItem(Route.Subjects.route,  "Courses", Icons.Filled.MenuBook),
-//        BottomItem(Route.Planner.route,   "Planner", Icons.Filled.Schedule),
-//        BottomItem(Route.Resources.route, "Resources", Icons.Filled.List),
-//        BottomItem(Route.Profile.route,   "Profile", Icons.Filled.AccountCircle),
-//    )
-
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
 
-    // 登录/注册/引导页：隐藏抽屉 + 底栏
     val chromeHidden = when (currentRoute) {
         Route.Login.route, Route.SignUp.route, Route.Onboarding.route -> true
         else -> false
     }
 
-    // 抽屉标题高亮（你的 AppDrawer.kt 里应有 appDrawerItems）
     val currentTitle = appDrawerItems.firstOrNull { it.route == currentRoute }?.label ?: "StudySmart"
 
-    // 核心页面内容（上方标题 + 下方底栏 + 中间 NavHost）
     @Composable
     fun AppScaffoldContent() {
-        Scaffold(
-            topBar = {
-                if (!chromeHidden) {
-                    CenterAlignedTopAppBar(
-                        title = { Text(currentTitle) },
-                        navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Menu")
-                            }
-                        }
-                    )
-                }
-            },
-//            bottomBar = {
-//                if (!chromeHidden) {
-//                    NavigationBar {
-//                        val current = currentRoute
-//                        bottomItems.forEach { item ->
-//                            NavigationBarItem(
-//                                selected = current == item.route,
-//                                onClick = {
-//                                    nav.navigate(item.route) {
-//                                        popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-//                                        launchSingleTop = true
-//                                        restoreState = true
-//                                    }
-//                                },
-//                                icon = { Icon(item.icon, contentDescription = item.label) },
-//                                label = { Text(item.label) }
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-        ) { inner ->
+        Scaffold { inner ->
             NavHost(
                 navController = nav,
                 startDestination = Route.Splash.route,
                 modifier = Modifier.padding(inner)
             ) {
-                composable(Route.Splash.route) { SplashGate(nav) }
+                composable(Route.Splash.route) {
+                    SplashGate(nav)  //
+                }
 
-                // ===== 你的路由保持不变（唯一建议：把 Planner 打开） =====
-                composable(Route.Login.route)      { LoginScreen(onLoggedIn = { nav.navigate(Route.Onboarding.route) }) }
-                composable(Route.SignUp.route)     { SignUpScreen(onSignedUp = { nav.navigate(Route.Onboarding.route) }) }
-                composable(Route.Onboarding.route) { OnboardingScreen(onFinish   = { nav.navigate(Route.Dashboard.route) }) }
+                composable(Route.Login.route) {
+                    LoginScreen(
+                        onLoggedIn = { nav.navigate(Route.Onboarding.route) },
+                        onNavigateToSignUp = { nav.navigate(Route.SignUp.route) }
+                    )
+                }
 
-                composable(Route.Dashboard.route)  { DashboardScreen() }
-                composable(Route.Subjects.route)   { SubjectScreen() }
-                composable(Route.Planner.route) { TaskScreen() }
-                composable(Route.Resources.route)  { ResourcesScreen() }
-//                composable(Route.Tasks.route) { TaskScreen() }
-                composable(Route.Profile.route)    { ProfileScreen(onLogout = { nav.navigate(Route.Login.route) }) }
+                composable(Route.SignUp.route) {
+                    SignUpScreen(
+                        onSignedUp = { nav.navigate(Route.Onboarding.route) },
+                        onNavigateToLogin = { nav.navigate(Route.Login.route) }
+                    )
+                }
 
-                // 子页
-                composable(Route.Session.route)    { SessionScreen() }
-                composable(Route.TaskEdit.route)   { TaskCreateEditScreen(onDone = { nav.popBackStack() }) }
+                composable(Route.Onboarding.route) {
+                    OnboardingScreen(onFinish = { nav.navigate(Route.Dashboard.route) })
+                }
+
+                composable(Route.Dashboard.route) {
+                    DashboardScreen(
+                        onNavigateToSession = { nav.navigate(Route.Session.route) },
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                    )
+                }
+
+                composable(Route.Subjects.route) {
+                    SubjectScreen(
+                        onNavigateBack = {
+                            nav.navigate(Route.Dashboard.route) {
+                                popUpTo(Route.Dashboard.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+
+                composable(Route.Planner.route) {
+                    TaskScreen(
+                        onNavigateBack = {
+                            nav.navigate(Route.Dashboard.route) {
+                                popUpTo(Route.Dashboard.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+
+                composable(Route.Resources.route) {
+                    ResourcesScreen(
+                        onNavigateBack = {
+                            nav.navigate(Route.Dashboard.route) {
+                                popUpTo(Route.Dashboard.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+
+                composable(Route.Profile.route) {
+                    ProfileScreen(
+                        onLogout = { nav.navigate(Route.Login.route) },
+                        onNavigateBack = {
+                            nav.navigate(Route.Dashboard.route) {
+                                popUpTo(Route.Dashboard.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+
+                composable(Route.Session.route) {
+                    SessionScreen(
+                        onNavigateBack = {
+                            nav.navigate(Route.Dashboard.route) {
+                                popUpTo(Route.Dashboard.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+
+                composable(Route.TaskEdit.route) {
+                    TaskCreateEditScreen(
+                        onDone = {
+                            nav.navigate(Route.Dashboard.route) {
+                                popUpTo(Route.Dashboard.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
             }
         }
     }
 
-    // 抽屉包裹整个 App（在 login/signup/onboarding 隐藏）
     if (chromeHidden) {
         AppScaffoldContent()
     } else {
@@ -187,18 +218,18 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
     }
 }
 
+// SplashGate 函数（在 StudyApp 外面，作为顶层函数）
 @Composable
 private fun SplashGate(nav: NavHostController) {
-    // 读登录状态
     val authVm: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val authState by authVm.authState.collectAsState()
 
-    // 读是否看过 Onboarding（DataStore）
     val ctx = androidx.compose.ui.platform.LocalContext.current
-    val prefsRepo = remember(ctx) { com.example.studysmart.data.datastore.UserPreferencesRepository(ctx) }
+    val prefsRepo = remember(ctx) {
+        com.example.studysmart.data.datastore.UserPreferencesRepository(ctx)
+    }
     val hasSeen by prefsRepo.hasSeenOnboardingFlow.collectAsState(initial = false)
 
-    // 根据状态决定跳转
     LaunchedEffect(authState.currentUser, hasSeen) {
         when {
             authState.currentUser == null -> {
@@ -222,7 +253,6 @@ private fun SplashGate(nav: NavHostController) {
         }
     }
 
-    // 简单过渡 UI
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
     }

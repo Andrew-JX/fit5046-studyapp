@@ -33,7 +33,8 @@ import java.util.Calendar
 @Composable
 fun TaskScreen(
     vm: TaskViewModel = hiltViewModel(),
-    subjectVm: SubjectViewModel = hiltViewModel() // 仅用于选择学科
+    subjectVm: SubjectViewModel = hiltViewModel(),// 仅用于选择学科
+    onNavigateBack: () -> Unit = {}
 ) {
     // 任务列表
     val tasks by vm.tasks.collectAsState()
@@ -91,7 +92,7 @@ fun TaskScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Task") },
                 navigationIcon = {
-                    IconButton(onClick = { /* nav up */ }) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },

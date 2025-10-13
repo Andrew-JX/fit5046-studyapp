@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/studysmart/presentation/session/SessionScreen.kt
 package com.example.studysmart.presentation.session
 
 import androidx.compose.foundation.layout.*
@@ -24,15 +23,15 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionScreen(
-    vm: SessionViewModel = hiltViewModel()
+    vm: SessionViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
-    // 1) 从 VM 获取数据
+
     val subjects by vm.subjects.collectAsState()
     val sessions by vm.sessionsUi.collectAsState()
     val isRunning by vm.isRunning.collectAsState()
     val elapsedMillis by vm.elapsedMillis.collectAsState()
 
-    // 2) 本地 UI 状态
     var selectedSubjectId by rememberSaveable { mutableStateOf<Long?>(null) }
     val selectedSubjectName = remember(subjects, selectedSubjectId) {
         subjects.firstOrNull { it.id == selectedSubjectId }?.name ?: "Select subject"
@@ -42,11 +41,9 @@ fun SessionScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isBottomSheetOpen by remember { mutableStateOf(false) }
 
-    // 删除对话框需要记录待删 id
     var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
     var pendingDeleteId by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    // 科目选择底部弹窗
     SubjectListBottomSheet(
         sheetState = sheetState,
         isOpen = isBottomSheetOpen,
@@ -61,7 +58,6 @@ fun SessionScreen(
         }
     )
 
-    // 删除确认
     DeleteDialog(
         isOpen = isDeleteDialogOpen,
         title = "Delete Session?",
@@ -82,7 +78,7 @@ fun SessionScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Study Sessions", style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
-                    IconButton(onClick = { /* navBack() */ }) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -100,7 +96,6 @@ fun SessionScreen(
                 .padding(paddingValues),
             contentPadding = PaddingValues(bottom = 96.dp)
         ) {
-            // 计时器
             item {
                 TimerSection(
                     modifier = Modifier
@@ -115,7 +110,6 @@ fun SessionScreen(
                 )
             }
 
-            // 选择科目
             item {
                 RelatedToSubjectSection(
                     modifier = Modifier
@@ -126,7 +120,6 @@ fun SessionScreen(
                 )
             }
 
-            // 操作按钮
             item {
                 ButtonsSection(
                     modifier = Modifier
@@ -138,7 +131,6 @@ fun SessionScreen(
                 )
             }
 
-            // 历史学习会话（把要删除的 id 回传出来）
             studySessionsList(
                 sectionTitle = "STUDY SESSIONS HISTORY",
                 emptyListText = "No sessions yet.\nStart a session to record your study time.",
