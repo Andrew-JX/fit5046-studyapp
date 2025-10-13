@@ -16,6 +16,7 @@ import com.example.studysmart.presentation.profile.ProfileScreen
 import com.example.studysmart.presentation.nav.StudyApp
 import com.example.studysmart.presentation.session.SessionScreen
 import com.example.studysmart.presentation.subject.SubjectScreen
+import com.example.studysmart.presentation.theme.StudySmartTheme
 
 
 @AndroidEntryPoint
@@ -23,10 +24,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
-                SessionScreen()
+            StudySmartTheme {
+ //               SessionScreen()
 //                SubjectScreen()
-//                 StudyApp()
+                 StudyApp()
 //               TaskScreen()
 //               DashboardScreen()
 //               TaskCreateEditScreen( onDone = {}, onCancel = {} )
