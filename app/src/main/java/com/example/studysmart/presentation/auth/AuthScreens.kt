@@ -46,9 +46,13 @@ fun LoginScreen(
 
         Text("Login", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(16.dp))
-        if (quote != null) {
-            FamousQuoteDisplay(quote!!)
-        }
+
+        FamousQuoteDisplay(
+            quote = quote,
+            onRefresh = { authViewModel.fetchQuote() }
+        )
+
+
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = email,
