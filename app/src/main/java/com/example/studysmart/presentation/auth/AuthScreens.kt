@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.studysmart.presentation.components.FamousQuoteDisplay
 import com.example.studysmart.util.calcStrength
 
 @Composable
@@ -18,10 +20,22 @@ fun LoginScreen(onLoggedIn: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var show by remember { mutableStateOf(false) }
+    val viewModel: AuthViewModel = viewModel()
+    val quote by viewModel.quote.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchQuote()
+    }
+
+
 
     Column(Modifier.fillMaxSize().padding(20.dp)) {
 
         Text("Login", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
+        if (quote != null) {
+            FamousQuoteDisplay(quote!!)
+        }
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = email, onValueChange = { email = it },
@@ -43,6 +57,7 @@ fun LoginScreen(onLoggedIn: () -> Unit) {
         TextButton(onClick = onLoggedIn) { Text("Continue as demo →") }
     }
 }
+
 
 @Composable
 fun SignUpScreen(onSignedUp: () -> Unit) {
