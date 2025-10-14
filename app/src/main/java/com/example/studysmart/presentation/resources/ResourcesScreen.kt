@@ -20,7 +20,8 @@ fun ResourcesScreen(
     val demo = listOf(
         "Open Library: Learning How to Learn",
         "Khan Academy: Calculus Roadmap",
-        "OpenStax: Physics Fundamentals"
+        "OpenStax: Physics Fundamentals",
+        "ZenQuotes: Famous Quotes"
     )
     Scaffold(
         topBar = {
