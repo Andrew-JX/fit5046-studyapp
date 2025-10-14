@@ -4,6 +4,9 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
+
+    id ("kotlin-kapt")
+
 }
 
 android {
@@ -118,6 +121,10 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.moshi:moshi:1.15.1")
+
+    implementation ("com.squareup.moshi:moshi-kotlin:1.15.0")
+    kapt ("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))

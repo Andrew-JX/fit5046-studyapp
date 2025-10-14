@@ -27,4 +27,6 @@ abstract class RepoModule {
 
     @Binds @Singleton
     abstract fun bindResourceRepo(impl: ResourceRepoRoomImpl): ResourceRepo
+
+
 }

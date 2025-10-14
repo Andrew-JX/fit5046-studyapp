@@ -221,7 +221,7 @@ fun StudyApp(drawerInitiallyOpen: Boolean = false) {
 // SplashGate 函数（在 StudyApp 外面，作为顶层函数）
 @Composable
 private fun SplashGate(nav: NavHostController) {
-    val authVm: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val authVm: AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     val authState by authVm.authState.collectAsState()
 
     val ctx = androidx.compose.ui.platform.LocalContext.current
