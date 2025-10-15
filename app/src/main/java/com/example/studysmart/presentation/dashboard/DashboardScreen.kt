@@ -26,6 +26,7 @@ import com.example.studysmart.presentation.theme.SubjectPalettes
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.example.studysmart.presentation.components.GraphScreen
+import com.example.studysmart.presentation.session.SessionUi
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,6 +46,8 @@ fun DashboardScreen(
     var goalHours by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(SubjectPalettes.options.random()) }
     val scope = rememberCoroutineScope()
+    var sessionToDelete by remember { mutableStateOf<SessionUi?>(null) }
+
 
     AddSubjectDialog(
         isOpen = isAddSubjectDialogOpen,
@@ -79,6 +82,9 @@ fun DashboardScreen(
         bodyText = "Are you sure, you want to delete this session? Your studied hours will be reduced by this session time. This action can not be undone.",
         onDismissRequest = { isDeleteSessionDialogOpen = false },
         onConfirmButtonClick = {
+            sessionToDelete?.id?.let {id ->
+                vm.deleteSession(id) // 执行删除
+            }
             isDeleteSessionDialogOpen = false
         }
     )
@@ -146,7 +152,10 @@ fun DashboardScreen(
                 sectionTitle = "RECENT STUDY SESSIONS",
                 emptyListText = "You don't have any recent study sessions.\n Start a study session to begin recording your progress.",
                 sessions = sessionList,
-                onDeleteIconClick = { isDeleteSessionDialogOpen = true }
+                onDeleteIconClick = {
+                        sessionUi ->
+                    sessionToDelete = sessionUi
+                    isDeleteSessionDialogOpen = true }
             )
 
             item {
