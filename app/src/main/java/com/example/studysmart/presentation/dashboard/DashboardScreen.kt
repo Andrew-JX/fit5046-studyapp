@@ -149,7 +149,15 @@ fun DashboardScreen(
                 onDeleteIconClick = { isDeleteSessionDialogOpen = true }
             )
 
-            item { GraphScreen() }
+            item {
+                Text(
+                    text = "DATA VISUALISATION",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+
+            item { GraphScreen(vm.sessions) }
         }
 
     }
