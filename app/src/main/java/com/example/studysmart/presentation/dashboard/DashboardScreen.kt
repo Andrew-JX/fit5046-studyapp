@@ -25,6 +25,7 @@ import com.example.studysmart.presentation.theme.ColorSet
 import com.example.studysmart.presentation.theme.SubjectPalettes
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import com.example.studysmart.presentation.components.GraphScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -147,7 +148,10 @@ fun DashboardScreen(
                 sessions = sessionList,
                 onDeleteIconClick = { isDeleteSessionDialogOpen = true }
             )
+
+            item { GraphScreen() }
         }
+
     }
 }
 
