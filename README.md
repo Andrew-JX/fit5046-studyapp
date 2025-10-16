@@ -32,6 +32,33 @@ Retrofit Service, DTO, Mapper, DI Injection, VM Unified Error/Loading/Null State
 Interfacing with Preferences/Authentication：
 Using ZR's UserPreferencesRepository (focusLength, breakLength, username, onboardingDone)
 
+## Zhiruo Zhai (Frontend Architecture & Authentication/Preferences Manager):
+
+### Responsibilities:
+Responsible for the app's user authentication system and navigation architecture: Firebase Authentication integration (login/sign-up), navigation drawer with cross-screen routing, profile management (username/password modification, study preferences), and DataStore Preferences for local user settings. Also responsible for form validation guidelines (password strength, character limits).
+
+### Completed content:
+
+Authentication System (Firebase):
+Firebase project setup and configuration (google-services.json, gradle dependencies)
+AuthViewModel: StateFlow-based state management, sign-in/sign-up/sign-out logic with error handling
+Password strength utility (PasswordStrength.kt): Real-time complexity evaluation with color feedback
+
+Navigation Connection:
+AppDrawer.kt: Navigation drawer items configuration
+StudyNav.kt: Navigation callbacks integration (onNavigateToSession/onNavigateBack/onOpenDrawer) across Dashboard/Session/Task/Subject/Profile/Resources screens
+
+User Preferences & Onboarding:
+UserPreferencesRepository (DataStore): Type-safe preferences storage for username, focusLength, breakLength, major, difficulty, weeklyTargetHours, hasSeenOnboarding
+
+Profile Management:
+ProfileScreen: User account information display, username editing with character counter (20 char limit), password change with re-authentication, study settings (focus/break length sliders)
+ProfileViewModel: Username update, password change with EmailAuthProvider re-authentication, focus/break length persistence, logout functionality
+
+### Interfacing with Other Modules:
+Using JMY's UserPreferencesRepository for focusLength, breakLength, username, onboardingDone (DataStore integration)
+Providing navigation structure and authentication guards for all team members' screens
+
 # Project merge steps:
 1. Switch to the target branch (team branch)
 git checkout V1
