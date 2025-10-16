@@ -59,6 +59,55 @@ ProfileViewModel: Username update, password change with EmailAuthProvider re-aut
 Using JMY's UserPreferencesRepository for focusLength, breakLength, username, onboardingDone (DataStore integration)
 Providing navigation structure and authentication guards for all team members' screens
 
+## Junxing Peng (Frontend UI & ViewModel Integration Lead)
+### Responsibilities:
+Responsible for the app’s frontend UI implementation and ViewModel-to-UI integration across the Task, Session, Subject, and Dashboard modules.
+Built all Jetpack Compose screens and reusable UI components, connected them with ViewModels via Kotlin Coroutines and StateFlow, and ensured reactive, single-source-of-truth data flow with Room through Hilt-injected repositories.
+
+Focused on UI logic, form validation, date/time picker behavior, and real-time state updates for user-facing modules.
+Worked closely with Minyu Ji (backend/data layer) to align repository contracts and ensure proper state/event propagation to the UI layer.
+
+### Completed content:
+Core Screens:
+TaskScreen: Task creation, editing, deletion, priority selection, subject linking, and completion status toggle.
+Includes form validation (title length, blank fields).
+Integrated TaskDatePicker with custom logic preventing selection of past dates.
+Implemented snackbar feedback and bottom-sheet subject selector (SubjectListBottomSheet).
+SessionScreen: Learning timer with start/pause/cancel/finish actions.
+Implemented real-time timer updates using elapsedMillis and progress visualization with Compose CircularProgressIndicator.
+Added history list (studySessionsList) and deletion dialog (DeleteDialog).
+SubjectScreen: Subject list display, add/edit/delete, goal hour management, and color palette selection.
+UI bound to SubjectViewModel with dynamic Flow updates.
+DashboardScreen: Overview of total study progress, subject goal tracking, and task/session summaries.
+Built basic filtering placeholders (All/Today/This Week) for future data aggregation integration.
+
+### UI Components (presentation.components):
+TaskCheckBox — Pure UI component for task completion toggle.
+TaskList / studySessionsList — LazyColumn-based reusable list templates.
+DeleteDialog — Reusable confirmation dialog for task/session deletion.
+TaskDatePicker — Date picker dialog integrated with SelectableDates logic.
+AddSubjectDialog — Subject creation form with validation.
+SubjectListBottomSheet — Bottom sheet selector for linking tasks/sessions to subjects.
+
+### ViewModel Integration:
+Subscribed to StateFlow data (tasks, subjects, sessionsUi) using collectAsState().
+Implemented event-driven feedback (snackbarHostState, TaskEvent.Saved/Error).
+Used LaunchedEffect for one-time ViewModel event collection.
+Connected ViewModel actions (saveNewTask(), toggleCompleted(), finishAndSave()) directly to UI event handlers.
+Ensured smooth communication between Compose UI and Repository through ViewModel functions provided by backend.
+
+### Cross-cutting tasks:
+Designed and built consistent Compose layouts with Material 3, Scaffold, and LazyColumn.
+Applied Hilt dependency injection for ViewModel and repository access.
+Standardized form error messages and validation logic across screens.
+Built modular, reusable UI components (dialogs, pickers, bars, lists).
+Managed state restoration and lifecycle consistency with rememberSaveable.
+Ensured cohesive color, typography, and layout alignment with ZR’s Material3 global theme.
+
+### Interfacing with Other Modules:
+Worked with Minyu Ji to connect ViewModels to Room repositories via Hilt injection (TaskRepo, SubjectRepo, SessionRepo).
+Integrated with Zhiruo Zhai’s navigation and DataStore-based user preferences, ensuring all Study, Task, and Session screens are accessible within the navigation flow.
+
 # Project merge steps:
 1. Switch to the target branch (team branch)
 git checkout V1
