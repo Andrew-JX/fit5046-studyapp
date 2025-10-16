@@ -24,7 +24,7 @@ class SubjectViewModel @Inject constructor(
     private val repo: SubjectRepo
 ) : ViewModel() {
 
-    // UI 层直接拿 SubjectUi 列表
+
     val subjects = repo.observeSubjects()
         .map { list -> list.map { it.asUi() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -33,7 +33,7 @@ class SubjectViewModel @Inject constructor(
     val events = _events.receiveAsFlow()
 
     fun upsert(
-        id: Long? = null,
+        id: Long? ,
         name: String,
         goalHours: Float,
         startColorArgb: Int,
@@ -44,7 +44,7 @@ class SubjectViewModel @Inject constructor(
             require(goalHours >= 0f) { "Goal hours must be >= 0" }
             repo.upsertSubject(
                 Subject(
-                    id = id,
+                    id = id ?: 0L,
                     name = name.trim(),
                     goalHours = goalHours,
                     startColorArgb = startColorArgb,

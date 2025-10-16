@@ -65,13 +65,13 @@ fun LazyListScope.tasksList(
         }
     }
 
-    // ✅ 改：task.id / isCompleted / dueDateMillis / priority 直接用
+
     items(tasks) { task ->
         TaskCard(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
             task = task,
             onCheckBoxClick = { onCheckBoxClick(task) },
-            onClick = { onTaskCardClick(task.id?.toInt()) }   // ✅ 改：taskId → id
+            onClick = { onTaskCardClick(task.id?.toInt()) }
         )
     }
 }
@@ -92,10 +92,10 @@ private fun TaskCard(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ✅ 改：isCompleted 而不是 isComplete
+
             TaskCheckBox(
                 isComplete = task.isCompleted,
-                borderColor = task.priority.color,  // ✅ Priority 已经是对象，直接用它的 color 属性
+                borderColor = task.priority.color,
                 onCheckBoxClick = onCheckBoxClick
             )
             Spacer(modifier = Modifier.width(10.dp))
@@ -111,7 +111,6 @@ private fun TaskCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // ✅ 改：显示 dueDateMillis 转为日期字符串
                 val formattedDate = java.text.SimpleDateFormat("yyyy-MM-dd").format(task.dueDateMillis)
                 Text(
                     text = formattedDate,

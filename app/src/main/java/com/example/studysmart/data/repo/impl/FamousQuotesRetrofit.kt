@@ -12,6 +12,6 @@ class FamousQuotesRetrofit @Inject constructor(
     private val api: FamousQuoteApi
 ) : FamousQuotesRepository{
     override suspend fun getQuote(): FamousQuote {
-        return api.getRandomQuote()
+        return api.getRandomQuote().first()
     }
 }

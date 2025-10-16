@@ -3,13 +3,14 @@ package com.example.studysmart.presentation.session
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -18,33 +19,31 @@ import com.example.studysmart.presentation.components.DeleteDialog
 import com.example.studysmart.presentation.components.SubjectListBottomSheet
 import com.example.studysmart.presentation.components.studySessionsList
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.saveable.rememberSaveable
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionScreen(
-    vm: SessionViewModel = hiltViewModel()
+    vm: SessionViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
-    // 1️⃣ 从 VM 获取数据
+
     val subjects by vm.subjects.collectAsState()
     val sessions by vm.sessionsUi.collectAsState()
     val isRunning by vm.isRunning.collectAsState()
     val elapsedMillis by vm.elapsedMillis.collectAsState()
 
-    // 2️⃣ UI 状态
     var selectedSubjectId by rememberSaveable { mutableStateOf<Long?>(null) }
     val selectedSubjectName = remember(subjects, selectedSubjectId) {
         subjects.firstOrNull { it.id == selectedSubjectId }?.name ?: "Select subject"
     }
 
-    // 3️⃣ 底部选择 / 删除确认
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isBottomSheetOpen by remember { mutableStateOf(false) }
-    var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
 
-    // 🔹 科目选择底部弹窗
+    var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
+    var pendingDeleteId by rememberSaveable { mutableStateOf<Long?>(null) }
+
     SubjectListBottomSheet(
         sheetState = sheetState,
         isOpen = isBottomSheetOpen,
@@ -59,15 +58,18 @@ fun SessionScreen(
         }
     )
 
-    // 🔹 删除会话对话框
     DeleteDialog(
         isOpen = isDeleteDialogOpen,
         title = "Delete Session?",
         bodyText = "Are you sure you want to delete this session? This cannot be undone.",
-        onDismissRequest = { isDeleteDialogOpen = false },
-        onConfirmButtonClick = {
-            // TODO: 接上 vm.deleteSession(id)
+        onDismissRequest = {
             isDeleteDialogOpen = false
+            pendingDeleteId = null
+        },
+        onConfirmButtonClick = {
+            pendingDeleteId?.let { vm.deleteSession(it) }
+            isDeleteDialogOpen = false
+            pendingDeleteId = null
         }
     )
 
@@ -76,13 +78,13 @@ fun SessionScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Study Sessions", style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
-                    IconButton(onClick = { /* TODO: navBack */ }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: 菜单功能 */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
+                    IconButton(onClick = { /* TODO: overflow menu */ }) {
+                        Icon(Icons.Filled.MoreVert, contentDescription = "More")
                     }
                 }
             )
@@ -94,7 +96,6 @@ fun SessionScreen(
                 .padding(paddingValues),
             contentPadding = PaddingValues(bottom = 96.dp)
         ) {
-            // 计时器
             item {
                 TimerSection(
                     modifier = Modifier
@@ -109,7 +110,6 @@ fun SessionScreen(
                 )
             }
 
-            // 选择科目
             item {
                 RelatedToSubjectSection(
                     modifier = Modifier
@@ -120,7 +120,6 @@ fun SessionScreen(
                 )
             }
 
-            // 操作按钮
             item {
                 ButtonsSection(
                     modifier = Modifier
@@ -132,12 +131,14 @@ fun SessionScreen(
                 )
             }
 
-            // 历史学习会话
             studySessionsList(
                 sectionTitle = "STUDY SESSIONS HISTORY",
                 emptyListText = "No sessions yet.\nStart a session to record your study time.",
                 sessions = sessions,
-                onDeleteIconClick = { isDeleteDialogOpen = true }
+                onDeleteIconClick = { session ->
+                    pendingDeleteId = session.id
+                    isDeleteDialogOpen = true
+                }
             )
         }
     }
@@ -153,13 +154,13 @@ private fun TimerSection(
 ) {
     Box(modifier, contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
-            progress = 1f,
+            progress = { 1f },
             strokeWidth = 12.dp,
             color = MaterialTheme.colorScheme.surfaceVariant,
             modifier = Modifier.size(260.dp)
         )
         CircularProgressIndicator(
-            progress = progress.coerceIn(0f, 1f),
+            progress = { progress.coerceIn(0f, 1f) },
             strokeWidth = 12.dp,
             modifier = Modifier.size(260.dp)
         )
@@ -193,7 +194,7 @@ private fun RelatedToSubjectSection(
         ) {
             Text(text = relatedToSubject, style = MaterialTheme.typography.bodyLarge)
             IconButton(onClick = selectSubjectButtonClick) {
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Subject")
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Subject")
             }
         }
     }
@@ -217,7 +218,6 @@ private fun ButtonsSection(
     }
 }
 
-// 工具函数：时间格式化
 private fun formatElapsedTime(ms: Long): String {
     val totalSeconds = ms / 1000
     val h = totalSeconds / 3600

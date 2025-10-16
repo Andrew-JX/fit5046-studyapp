@@ -6,6 +6,7 @@ import retrofit2.http.GET
 
 
 interface FamousQuoteApi {
-    @GET("/random")
-    suspend fun getRandomQuote(): FamousQuote
+    @GET("random")
+    suspend fun getRandomQuote(): List<FamousQuote>
+
 }

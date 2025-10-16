@@ -1,6 +1,7 @@
 // app/src/main/java/com/example/studysmart/presentation/dashboard/DashboardViewModel.kt
 package com.example.studysmart.presentation.dashboard
 
+import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,22 +18,34 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import com.example.studysmart.presentation.session.SessionUi
 import com.example.studysmart.presentation.session.asUi
+import androidx.compose.ui.graphics.toArgb
+import com.example.studysmart.domain.model.AlarmItem
+import com.example.studysmart.util.AlarmScheduler
+import com.example.studysmart.util.changeMillisToDateString
+import com.example.studysmart.work.SessionAlarmMannager
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val subjectRepo: SubjectRepo,
     private val taskRepo: TaskRepo,
-    private val sessionRepo: SessionRepo
+    private val sessionRepo: SessionRepo,
+    @ApplicationContext private val context: Context
+
 ) : ViewModel() {
 
-    // 列表数据 —— 和你的 TaskViewModel 一致，用 Flow 暴露 + 在 UI 层 collect
+    // List data
     val subjects: StateFlow<List<Subject>> =
         subjectRepo.observeSubjects()
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val tasks: StateFlow<List<Task>> =
-        taskRepo.observeTasks(null) // 如需按 subjectId 过滤，传 id
+        taskRepo.observeTasks(null) // If need to filter by subjectId, pass the id
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val sessions: StateFlow<List<SessionUi>> =
@@ -43,28 +56,32 @@ class DashboardViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 
-    // 事件通道 —— 和 TaskViewModel 同款
+    // Event channel
     private val _events = Channel<DashboardEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    // 保存/更新 Subject（与 TaskViewModel.save 一样的 try/catch + Channel 通知）
     fun saveSubject(ui: SubjectUiState) = viewModelScope.launch {
         try {
             require(ui.name.isNotBlank()) { "Subject name is required" }
-            require(ui.goalHours.toFloatOrNull() != null) { "Goal hours must be a number" }
+            val goal = ui.goalHours.toFloatOrNull()
+                ?: error("Goal hours must be a number")
+
+            // Get colours
+            val start = ui.colors.firstOrNull()?.toArgb() ?: 0xFF81E8FF.toInt()
+            val end   = ui.colors.lastOrNull()?.toArgb()  ?: 0xFF4DB3FF.toInt()
 
             val id = subjectRepo.upsertSubject(
                 Subject(
                     id = ui.id,
                     name = ui.name.trim(),
-                    goalHours = ui.goalHours.toFloat(),   // 按你的模型改类型
-                    startColorArgb = ui.colors.firstOrNull()?.value?.toInt() ?: 0xFF81E8FF.toInt(),
-                    endColorArgb = ui.colors.lastOrNull()?.value?.toInt() ?: 0xFF4DB3FF.toInt()
+                    goalHours = goal,
+                    startColorArgb = start,
+                    endColorArgb = end
                 )
             )
-            _events.send(DashboardEvent.SubjectSaved(id))
+            _events.trySend(DashboardEvent.SubjectSaved(id))
         } catch (e: Exception) {
-            _events.send(DashboardEvent.Error(e.message ?: "Save subject failed"))
+            _events.trySend(DashboardEvent.Error(e.message ?: "Save subject failed"))
         }
     }
 
@@ -74,6 +91,41 @@ class DashboardViewModel @Inject constructor(
             _events.send(DashboardEvent.SessionDeleted(id))
         } catch (e: Exception) {
             _events.send(DashboardEvent.Error(e.message ?: "Delete session failed"))
+        }
+    }
+
+    fun toggleTaskDone(id: Long) = viewModelScope.launch {
+        try {
+            val current = tasks.value.firstOrNull { it.id == id } ?: return@launch
+            taskRepo.setCompleted(id, !current.isCompleted)
+        } catch (e: Exception) {
+            _events.send(DashboardEvent.Error(e.message ?: "Update task failed"))
+        }
+    }
+
+    fun alarm() = viewModelScope.launch {
+
+        val alarmScheduler: AlarmScheduler = SessionAlarmMannager(context = context)
+
+        val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+
+        val alarmItems = tasks.value
+            .filter { task ->
+                task.dueDateMillis.changeMillisToDateString() == todayString
+            }
+            .map { task ->
+                val dueDateTime = Instant.ofEpochMilli(task.dueDateMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+
+                AlarmItem(
+                    time = dueDateTime,
+                    message = "You have task Due Today：${task.title}"
+                )
+            }
+
+        alarmItems.forEach { alarmItem ->
+            alarmScheduler.schedule(alarmItem)
         }
     }
 }

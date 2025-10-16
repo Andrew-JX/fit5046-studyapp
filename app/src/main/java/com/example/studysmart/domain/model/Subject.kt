@@ -1,3 +1,4 @@
+// domain/model/Subject.kt
 package com.example.studysmart.domain.model
 
 data class Subject(

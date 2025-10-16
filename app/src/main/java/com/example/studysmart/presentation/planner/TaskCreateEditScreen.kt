@@ -26,9 +26,9 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskCreateEditScreen(
-    onDone: () -> Unit = {},                 // ✅ 兼容你原来导航里写的 onDone = { nav.popBackStack() }
+    onDone: () -> Unit = {},
     onCancel: () -> Unit = {},
-    vm: TaskViewModel = hiltViewModel()      // ✅ 直接在屏幕里注入 ViewModel
+    vm: TaskViewModel = hiltViewModel()
 ) {
     // ---- State ----
     var title by rememberSaveable { mutableStateOf("") }
@@ -56,11 +56,11 @@ fun TaskCreateEditScreen(
     var subjectSheet by remember { mutableStateOf(false) }
     var chosenSubject: Pair<Long, String>? by rememberSaveable { mutableStateOf(fakeSubjects.first()) }
 
-    // 校验日期
+
     val selectedDate = dateState.selectedDateMillis ?: today
     val dateInvalid = selectedDate < today
 
-    // ✅ 监听保存事件：成功后回调 onDone()（让你的导航返回）
+
     LaunchedEffect(Unit) {
         vm.events.collect { e ->
             when (e) {
@@ -148,7 +148,7 @@ fun TaskCreateEditScreen(
         }
 
         Spacer(Modifier.height(24.dp))
-        // ✅ 关键改动：直接调 VM 写入 Room
+
         Button(
             onClick = {
                 if (selectedDate < today) return@Button
