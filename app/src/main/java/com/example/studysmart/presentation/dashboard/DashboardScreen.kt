@@ -50,7 +50,7 @@ fun DashboardScreen(
 
     vm.alarm()
 
-
+    // Add subject dialog box
     AddSubjectDialog(
         isOpen = isAddSubjectDialogOpen,
         subjectName = subjectName,
@@ -78,6 +78,7 @@ fun DashboardScreen(
         }
     )
 
+    // Delete Recent Study Sessions dialog box
     DeleteDialog(
         isOpen = isDeleteSessionDialogOpen,
         title = "Delete Session?",
@@ -85,12 +86,13 @@ fun DashboardScreen(
         onDismissRequest = { isDeleteSessionDialogOpen = false },
         onConfirmButtonClick = {
             sessionToDelete?.id?.let {id ->
-                vm.deleteSession(id) // 执行删除
+                vm.deleteSession(id)
             }
             isDeleteSessionDialogOpen = false
         }
     )
 
+    // Scaffold framework (with top bar + main content)
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -139,16 +141,17 @@ fun DashboardScreen(
             }
 
             item { Spacer(Modifier.height(8.dp)) }
-            item { TaskFilterChips() }
 
+            // Upcoming Tasks List
             tasksList(
                 sectionTitle = "UPCOMING TASKS",
                 emptyListText = "You don't have any upcoming tasks.\n Click the + button in subject screen to add new task.",
                 tasks = taskList,
-                onCheckBoxClick = { /* TODO */ },
+                onCheckBoxClick = { t -> t.id?.let(vm::toggleTaskDone) },
                 onTaskCardClick = { /* TODO */ }
             )
 
+            // Recent Study Sessions list
             item { Spacer(modifier = Modifier.height(20.dp)) }
             studySessionsList(
                 sectionTitle = "RECENT STUDY SESSIONS",
@@ -277,28 +280,6 @@ fun SectionHeader(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TaskFilterChips(
-    modifier: Modifier = Modifier,
-    options: List<String> = listOf("All", "Today", "This week"),
-) {
-    var selected by remember { mutableStateOf(options.first()) }
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp)
-    ) {
-        options.forEach { label ->
-            FilterChip(
-                selected = selected == label,
-                onClick = { selected = label },
-                label = { Text(label) },
-                modifier = Modifier.padding(end = 8.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun ProgressCard(

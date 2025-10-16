@@ -29,12 +29,10 @@ fun SubjectScreen(
 ) {
     val subjects by vm.subjects.collectAsState()
 
-    // —— Dialog 状态 —— //
     var dialogOpen by remember { mutableStateOf(false) }
     var deleteOpen by remember { mutableStateOf(false) }
     var editingId by remember { mutableStateOf<Long?>(null) }
 
-    // 表单字段
     var subjectName by remember { mutableStateOf("") }
     var goalHoursText by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(SubjectPalettes.options.first()) }
@@ -119,7 +117,7 @@ fun SubjectScreen(
         }
     }
 
-    // —— 新增/编辑对话框 —— //
+
     AddSubjectDialog(
         isOpen = dialogOpen,
         subjectName = subjectName,
@@ -142,7 +140,7 @@ fun SubjectScreen(
         }
     )
 
-    // —— 删除对话框 —— //
+
     DeleteDialog(
         isOpen = deleteOpen,
         title = "Delete Subject?",
@@ -155,7 +153,7 @@ fun SubjectScreen(
     )
 }
 
-/** 简单的行卡片：显示名称 + 溢出菜单（编辑、删除） */
+// Subject List
 @Composable
 private fun SubjectRow(
     subject: SubjectUi,

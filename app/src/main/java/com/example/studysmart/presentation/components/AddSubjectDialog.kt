@@ -69,7 +69,7 @@ fun AddSubjectDialog(
             title = { Text(text = title) },
             text = {
                 Column {
-                    // ---- 颜色选择 ----
+                    // colours
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -96,7 +96,7 @@ fun AddSubjectDialog(
                         }
                     }
 
-                    // ---- 名称输入 ----
+                    // ---- Insert Name ----
                     OutlinedTextField(
                         value = subjectName,
                         onValueChange = onSubjectNameChange,
@@ -108,7 +108,7 @@ fun AddSubjectDialog(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // ---- 学习目标输入 ----
+                    // ---- Insert Goals ----
                     OutlinedTextField(
                         value = goalHours,
                         onValueChange = onGoalHoursChange,

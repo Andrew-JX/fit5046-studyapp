@@ -28,7 +28,7 @@ sealed interface SessionEvent {
 
 @HiltViewModel
 class SessionViewModel @Inject constructor(
-    @ApplicationContext private val appContext: Context,   // ✅ 用应用级 Context
+    @ApplicationContext private val appContext: Context,
     private val sessionRepo: SessionRepo,
     private val subjectRepo: SubjectRepo
 ) : ViewModel() {
@@ -67,14 +67,14 @@ class SessionViewModel @Inject constructor(
     private val _events = Channel<SessionEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    // ====== WorkManager 封装 ======
+    // ====== WorkManager  ======
     private fun startBackgroundTrackingIfPossible() {
         val sid = currentSubjectId.value
         if (sid == null) {
             viewModelScope.launch { _events.send(SessionEvent.Error("Please choose a subject first")) }
             return
         }
-        StudySessionWorker.startTracking(appContext, subjectId = sid, chunkMinutes = 1)
+        StudySessionWorker.startTracking(appContext, subjectId = sid, chunkMinutes = 1)//auto record time
     }
 
     private fun stopBackgroundTrackingIfPossible() {
@@ -86,7 +86,7 @@ class SessionViewModel @Inject constructor(
     // ====== Timer control ======
     fun startTimer() {
         if (_isRunning.value) return
-        startBackgroundTrackingIfPossible()     // ✅ 开始后台追踪
+        startBackgroundTrackingIfPossible()
         _isRunning.value = true
         timerJob = viewModelScope.launch {
             _events.send(SessionEvent.TimerStarted)
@@ -102,7 +102,6 @@ class SessionViewModel @Inject constructor(
         _isRunning.value = false
         timerJob?.cancel()
         timerJob = null
-        // 暂停不停止后台（看需求，可选择停止）
         // stopBackgroundTrackingIfPossible()
     }
 
@@ -111,7 +110,7 @@ class SessionViewModel @Inject constructor(
         timerJob?.cancel()
         timerJob = null
         _elapsedMillis.value = 0L
-        stopBackgroundTrackingIfPossible()      // ✅ 取消时停止后台
+        stopBackgroundTrackingIfPossible()      //stops the background when canceled
         viewModelScope.launch { _events.send(SessionEvent.TimerCanceled) }
     }
 
@@ -134,7 +133,7 @@ class SessionViewModel @Inject constructor(
             timerJob?.cancel()
             timerJob = null
             _elapsedMillis.value = 0L
-            stopBackgroundTrackingIfPossible()  // ✅ 结束时停止后台
+            stopBackgroundTrackingIfPossible()  // stops the background when ended
 
             _events.send(SessionEvent.Saved(id))
             _events.send(SessionEvent.TimerFinished)

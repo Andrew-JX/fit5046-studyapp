@@ -27,10 +27,10 @@ class MainActivity : ComponentActivity() {
             StudySmartTheme {
  //               SessionScreen()
 //                SubjectScreen()
-                 StudyApp()
+               StudyApp()
 //               TaskScreen()
 //               DashboardScreen()
-//               TaskCreateEditScreen( onDone = {}, onCancel = {} )
+            //               TaskCreateEditScreen( onDone = {}, onCancel = {} )
 //                ProfileScreen {  }
 //                LoginScreen(
 //                    onLoggedIn = {

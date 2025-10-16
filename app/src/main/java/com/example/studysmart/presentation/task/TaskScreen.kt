@@ -28,21 +28,24 @@ import com.example.studysmart.util.changeMillisToDateString
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.util.Calendar
+import androidx.compose.material3.SelectableDates
+import java.time.LocalDate
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskScreen(
     vm: TaskViewModel = hiltViewModel(),
-    subjectVm: SubjectViewModel = hiltViewModel(),// 仅用于选择学科
+    subjectVm: SubjectViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
-    // 任务列表
+    // Task List
     val tasks by vm.tasks.collectAsState()
 
-    // 学科列表（来自 Room）
+    // Subject List（From Room）
     val subjects by subjectVm.subjects.collectAsState()
 
-    // 表单状态
+    // List Status
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedPriority by rememberSaveable { mutableStateOf(Priority.MEDIUM) }
@@ -51,8 +54,24 @@ fun TaskScreen(
 
     var dueDate by rememberSaveable { mutableStateOf<Long?>(Instant.now().toEpochMilli()) }
     var isDatePickerDialogOpen by rememberSaveable { mutableStateOf(false) }
+    val todayStartMillis = remember {
+        LocalDate.now()
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }
+
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = dueDate ?: Instant.now().toEpochMilli()
+
+        initialSelectedDateMillis = maxOf(dueDate ?: todayStartMillis, todayStartMillis),
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+
+                return utcTimeMillis >= todayStartMillis
+            }
+
+            override fun isSelectableYear(year: Int): Boolean = true
+        }
     )
 
     // BottomSheet for subjects
@@ -60,7 +79,6 @@ fun TaskScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isBottomSheetOpen by remember { mutableStateOf(false) }
 
-    // 删除对话框（本页作为“新建”，保留 UI）
     var isDeleteDialogOpen by rememberSaveable { mutableStateOf(false) }
 
     val taskTitleError = when {
@@ -77,7 +95,7 @@ fun TaskScreen(
             when (e) {
                 is TaskEvent.Saved -> {
                     snackbarHostState.showSnackbar("Saved #${e.id}")
-                    // 清空表单（保留学科与优先级）
+
                     title = ""
                     description = ""
                     dueDate = Instant.now().toEpochMilli()
@@ -97,7 +115,6 @@ fun TaskScreen(
                     }
                 },
                 actions = {
-                    // 新建页不显示删除/打勾，这里留空
                 }
             )
         },
@@ -107,7 +124,6 @@ fun TaskScreen(
             modifier = Modifier.fillMaxSize(),
             contentPadding = paddingValues
         ) {
-            // —— 表单 —— //
             item {
                 Column(
                     modifier = Modifier
@@ -222,7 +238,7 @@ fun TaskScreen(
                 }
             }
 
-            // —— 列表 —— //
+
             tasksList(
                 sectionTitle = "ALL TASKS",
                 emptyListText = "No tasks yet.",

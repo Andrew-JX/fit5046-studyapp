@@ -39,13 +39,13 @@ class DashboardViewModel @Inject constructor(
 
 ) : ViewModel() {
 
-    // 列表数据 —— 和你的 TaskViewModel 一致，用 Flow 暴露 + 在 UI 层 collect
+    // List data
     val subjects: StateFlow<List<Subject>> =
         subjectRepo.observeSubjects()
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val tasks: StateFlow<List<Task>> =
-        taskRepo.observeTasks(null) // 如需按 subjectId 过滤，传 id
+        taskRepo.observeTasks(null) // If need to filter by subjectId, pass the id
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val sessions: StateFlow<List<SessionUi>> =
@@ -56,7 +56,7 @@ class DashboardViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 
-    // 事件通道 —— 和 TaskViewModel 同款
+    // Event channel
     private val _events = Channel<DashboardEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
@@ -66,13 +66,13 @@ class DashboardViewModel @Inject constructor(
             val goal = ui.goalHours.toFloatOrNull()
                 ?: error("Goal hours must be a number")
 
-            // 从 UI 颜色取 ARGB；给出兜底颜色（可按你主题替换）
+            // Get colours
             val start = ui.colors.firstOrNull()?.toArgb() ?: 0xFF81E8FF.toInt()
             val end   = ui.colors.lastOrNull()?.toArgb()  ?: 0xFF4DB3FF.toInt()
 
             val id = subjectRepo.upsertSubject(
                 Subject(
-                    id = ui.id,                 // ★ 新建时就是 null，Room 自动生成
+                    id = ui.id,
                     name = ui.name.trim(),
                     goalHours = goal,
                     startColorArgb = start,
@@ -91,6 +91,15 @@ class DashboardViewModel @Inject constructor(
             _events.send(DashboardEvent.SessionDeleted(id))
         } catch (e: Exception) {
             _events.send(DashboardEvent.Error(e.message ?: "Delete session failed"))
+        }
+    }
+
+    fun toggleTaskDone(id: Long) = viewModelScope.launch {
+        try {
+            val current = tasks.value.firstOrNull { it.id == id } ?: return@launch
+            taskRepo.setCompleted(id, !current.isCompleted)
+        } catch (e: Exception) {
+            _events.send(DashboardEvent.Error(e.message ?: "Update task failed"))
         }
     }
 

@@ -13,11 +13,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
-/**
- * 后台记录学习时长的 Worker：
- * - ≥15 分钟：使用 PeriodicWorkRequest。
- * - < 15 分钟：使用 OneTimeWorkRequest + doWork 末尾自我重排程。
- */
+/*
+The Worker that records the learning duration in the background:
+* - ≥15 minutes: Use PeriodicWorkRequest.
+* - < 15 minutes: Use OneTimeWorkRequest + doWork to self-reschedule at the end.
+*/
 class StudySessionWorker(
     appContext: Context,
     params: WorkerParameters
@@ -33,7 +33,7 @@ class StudySessionWorker(
             applicationContext, RepoEntryPoint::class.java
         ).sessionRepo()
 
-        // 写入一条片段
+        // Write a fragment
         repo.upsertSession(
             Session(
                 id = null,
@@ -43,7 +43,7 @@ class StudySessionWorker(
             )
         )
 
-        // 若为短间隔任务，结束时排下一次
+        // If it is a short-interval task, the next one will be scheduled when it ends
         if (chunkMin < 15) {
             startShortInterval(applicationContext, subjectId, chunkMin)
         }
@@ -62,9 +62,9 @@ class StudySessionWorker(
         private const val UNIQUE_SHORT_PREFIX    = "study-tracker-short-"
 
         /**
-         * 统一入口：根据分钟数选择策略。
+         * Unified entry: Select strategies based on minutes.
          * - chunkMinutes >= 15 → PeriodicWork
-         * - chunkMinutes <  15 → OneTimeWork + 自我重排程
+         * - chunkMinutes <  15 → OneTimeWork + auto record
          */
         fun startTracking(
             context: Context,
@@ -78,14 +78,14 @@ class StudySessionWorker(
             }
         }
 
-        /** 停止同一学科的所有后台追踪（无论长/短间隔）。 */
+        /** Stop all background tracking of the same subject (regardless of long or short intervals). */
         fun stopTracking(context: Context, subjectId: Long) {
             val wm = WorkManager.getInstance(context)
             wm.cancelUniqueWork(UNIQUE_PERIODIC_PREFIX + subjectId)
             wm.cancelUniqueWork(UNIQUE_SHORT_PREFIX + subjectId)
         }
 
-        /** 仅执行一次（可用于 Finish 时的补记）。 */
+        /** Execute only once (can be used for completion at Finish). */
         fun enqueueOnce(
             context: Context,
             subjectId: Long,
@@ -103,7 +103,7 @@ class StudySessionWorker(
             WorkManager.getInstance(context).enqueue(req)
         }
 
-        // ---------- 内部：≥15min 周期 ----------
+        // ---------- ≥15min period ----------
         private fun startPeriodic(context: Context, subjectId: Long, chunkMinutes: Int) {
             val data = baseInput(subjectId, chunkMinutes)
             val constraints = Constraints.Builder()
@@ -122,7 +122,7 @@ class StudySessionWorker(
             )
         }
 
-        // ---------- 内部：<15min 单次 + 自排程 ----------
+        // ---------- <15min  ----------
         private fun startShortInterval(context: Context, subjectId: Long, chunkMinutes: Int) {
             val data = baseInput(subjectId, chunkMinutes)
             val req = OneTimeWorkRequestBuilder<StudySessionWorker>()
@@ -144,7 +144,7 @@ class StudySessionWorker(
     }
 }
 
-/** 通过 Hilt EntryPoint 暴露仓库给 Worker 使用。 */
+
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface RepoEntryPoint {
