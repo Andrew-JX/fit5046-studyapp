@@ -1,6 +1,7 @@
 // app/src/main/java/com/example/studysmart/presentation/dashboard/DashboardViewModel.kt
 package com.example.studysmart.presentation.dashboard
 
+import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,13 +19,24 @@ import kotlinx.coroutines.launch
 import com.example.studysmart.presentation.session.SessionUi
 import com.example.studysmart.presentation.session.asUi
 import androidx.compose.ui.graphics.toArgb
+import com.example.studysmart.domain.model.AlarmItem
+import com.example.studysmart.util.AlarmScheduler
+import com.example.studysmart.util.changeMillisToDateString
+import com.example.studysmart.work.SessionAlarmMannager
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val subjectRepo: SubjectRepo,
     private val taskRepo: TaskRepo,
-    private val sessionRepo: SessionRepo
+    private val sessionRepo: SessionRepo,
+    @ApplicationContext private val context: Context
+
 ) : ViewModel() {
 
     // 列表数据 —— 和你的 TaskViewModel 一致，用 Flow 暴露 + 在 UI 层 collect
@@ -79,6 +91,32 @@ class DashboardViewModel @Inject constructor(
             _events.send(DashboardEvent.SessionDeleted(id))
         } catch (e: Exception) {
             _events.send(DashboardEvent.Error(e.message ?: "Delete session failed"))
+        }
+    }
+
+    fun alarm() = viewModelScope.launch {
+
+        val alarmScheduler: AlarmScheduler = SessionAlarmMannager(context = context)
+
+        val todayString = LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+
+        val alarmItems = tasks.value
+            .filter { task ->
+                task.dueDateMillis.changeMillisToDateString() == todayString
+            }
+            .map { task ->
+                val dueDateTime = Instant.ofEpochMilli(task.dueDateMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+
+                AlarmItem(
+                    time = dueDateTime,
+                    message = "You have task Due Today：${task.title}"
+                )
+            }
+
+        alarmItems.forEach { alarmItem ->
+            alarmScheduler.schedule(alarmItem)
         }
     }
 }
