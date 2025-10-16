@@ -48,7 +48,9 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     var sessionToDelete by remember { mutableStateOf<SessionUi?>(null) }
 
-    vm.alarm()
+    LaunchedEffect(taskList) {
+        vm.alarm()
+    }
 
     // Add subject dialog box
     AddSubjectDialog(
