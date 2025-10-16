@@ -11,7 +11,7 @@ import com.example.studysmart.data.local.entity.*
         SessionEntity::class,
         ResourceEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
