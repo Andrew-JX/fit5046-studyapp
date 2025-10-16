@@ -17,26 +17,40 @@ import com.example.studysmart.presentation.nav.StudyApp
 import com.example.studysmart.presentation.session.SessionScreen
 import com.example.studysmart.presentation.subject.SubjectScreen
 import com.example.studysmart.presentation.theme.StudySmartTheme
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ Android 13+ 通知权限请求
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
+
         setContent {
             StudySmartTheme {
- //               SessionScreen()
-//                SubjectScreen()
-               StudyApp()
-//               TaskScreen()
-//               DashboardScreen()
-            //               TaskCreateEditScreen( onDone = {}, onCancel = {} )
-//                ProfileScreen {  }
-//                LoginScreen(
-//                    onLoggedIn = {
-//                        Toast.makeText(this, "Login success ✅", Toast.LENGTH_SHORT).show()
-//                    }
-//                )
+                StudyApp()
+                // 你可以根据需要切换其他 Screen
+                // DashboardScreen()
+                // TaskScreen()
+                // LoginScreen { ... }
             }
         }
     }
