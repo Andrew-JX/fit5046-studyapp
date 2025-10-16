@@ -24,18 +24,18 @@ class TaskViewModel @Inject constructor(
     private val repo: TaskRepo
 ) : ViewModel() {
 
-    // 任务列表（Room Flow → StateFlow）
+    // Task List (Room Flow → StateFlow)
     val tasks = repo.observeTasks().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList()
     )
 
-    // 单次事件：保存成功/失败
+    // Single event: save success/failure
     private val _events = Channel<TaskEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    /** 新建或更新任务（这里用于新建） */
+    /** Create or update a task (here for creating a new one) */
     fun saveNewTask(
         title: String,
         description: String,

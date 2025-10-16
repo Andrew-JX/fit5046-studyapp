@@ -91,7 +91,7 @@ fun LoginScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        // 调用 Firebase 认证
+        // Calling Firebase Authentication
         Button(
             onClick = {
                 authViewModel.clearError()
@@ -100,7 +100,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = !authState.isLoading && email.isNotBlank() && pass.isNotBlank()
         ) {
-            // 加载动画
+            // Loading Animation
             if (authState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
@@ -112,7 +112,6 @@ fun LoginScreen(
             }
         }
 
-        // 保持：Demo 模式直接跳转
         TextButton(
             onClick = onLoggedIn,
             enabled = !authState.isLoading
@@ -231,7 +230,7 @@ fun SignUpScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        // 调用 Firebase 认证
+        // Calling Firebase Authentication
         Button(
             onClick = {
                 authViewModel.clearError()
@@ -240,7 +239,7 @@ fun SignUpScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = !authState.isLoading && !mismatch && pass.isNotBlank() && email.isNotBlank()
         ) {
-            // 新增：加载动画
+            // Loading animation
             if (authState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
@@ -252,7 +251,7 @@ fun SignUpScreen(
             }
         }
 
-        // 保持：Skip 模式直接跳转
+        // Keep: Skip mode jumps directly
         TextButton(
             onClick = onSignedUp,
             enabled = !authState.isLoading

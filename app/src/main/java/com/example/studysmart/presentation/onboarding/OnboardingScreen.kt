@@ -25,12 +25,12 @@ fun OnboardingScreen(
 
     var goalHours by remember { mutableStateOf("10") }
 
-    // 监听保存成功事件 → 导航到 Dashboard
+    // Listen for save success events → Navigate to Dashboard
     LaunchedEffect(Unit) {
         vm.events.collect { e ->
             when (e) {
                 is OnboardingEvent.Saved -> onFinish()
-                is OnboardingEvent.Error -> { /* 这里已在 UI 显示错误 */ }
+                is OnboardingEvent.Error -> {  }
             }
         }
     }
@@ -82,7 +82,7 @@ fun OnboardingScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 错误信息
+        // error message
         ui.error?.let {
             Spacer(Modifier.height(8.dp))
             Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)

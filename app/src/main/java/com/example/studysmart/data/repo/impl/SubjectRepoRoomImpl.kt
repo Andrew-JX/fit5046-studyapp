@@ -23,10 +23,10 @@ class SubjectRepoRoomImpl @Inject constructor(
         dao.get(id)?.toDomain()
 
     override suspend fun upsertSubject(s: Subject): Long {
-        // 你的 DAO 的 upsert 实际是 @Insert(onConflict = REPLACE)
-        // - id == null 时：插入新纪录，返回新 rowId
-        // - id != null 且存在：REPLACE（底层 delete+insert），返回新 rowId（通常等于该 id）
-        // - id != null 且不存在：插入新纪录，返回 rowId（通常等于该 id）
+        // DAO upsert is actually @Insert(onConflict = REPLACE)
+        // - When id == null: insert a new record and return the new rowId
+        // - When id != null and exists: REPLACE (underlying delete+insert), return the new rowId (usually equal to the id)
+        // - When id != null and does not exist: insert a new record and return the rowId (usually equal to the id)
         return dao.upsert(s.toEntity())
     }
 

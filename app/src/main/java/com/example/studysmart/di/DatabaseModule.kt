@@ -19,7 +19,7 @@ object DatabaseModule {
     @Provides @Singleton
     fun provideDb(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, "studysmart.db")
-            .fallbackToDestructiveMigration() // A4 阶段可用，后期再加真实 Migration
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides

@@ -44,17 +44,17 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private fun loadUserProfile() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            // 从Firebase Auth获取email
+            // Get email from Firebase Auth
             val email = currentUser.email ?: ""
-            // 从email生成默认用户名（或从本地存储读取）
+            // Generate a default username from email (or read from local storage)
             val defaultUsername = email.substringBefore("@")
 
             _profileState.value = _profileState.value.copy(
                 userEmail = email,
-                username = defaultUsername // 这里可以从DataStore读取保存的用户名
+                username = defaultUsername
             )
 
-            // 从本地DataStore加载保存的用户名
+            // Load the saved username from the local DataStore
             viewModelScope.launch {
                 preferencesRepository.usernameFlow.collect { savedUsername ->
                     if (savedUsername.isNotEmpty()) {
@@ -81,7 +81,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             try {
                 _profileState.value = _profileState.value.copy(isLoading = true)
 
-                // 保存到本地DataStore
+                // Save to local DataStore
                 preferencesRepository.saveUsername(newUsername)
 
                 _profileState.value = _profileState.value.copy(
@@ -112,11 +112,11 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             try {
                 _profileState.value = _profileState.value.copy(isLoading = true)
 
-                // 重新验证用户
+                // Reauthenticate user
                 val credential = EmailAuthProvider.getCredential(email, currentPassword)
                 user.reauthenticate(credential).await()
 
-                // 更新密码（这会更新Firebase Auth中的密码）
+                // Update password (this updates the password in Firebase Auth)
                 user.updatePassword(newPassword).await()
 
                 _profileState.value = _profileState.value.copy(
@@ -125,7 +125,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     error = null
                 )
 
-                // 清除成功消息
+                // Clear Success Message
                 kotlinx.coroutines.delay(3000)
                 _profileState.value = _profileState.value.copy(successMessage = null)
 

@@ -28,7 +28,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
     private val _events = Channel<OnboardingEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    // 供 UI 使用的选项
+    // Options for UI use
     val majors = listOf("English", "Maths", "Physics", "CS", "Art")
     val difficulties = listOf("Beginner", "Intermediate", "Advanced")
 

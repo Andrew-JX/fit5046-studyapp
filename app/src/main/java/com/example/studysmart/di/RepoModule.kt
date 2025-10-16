@@ -14,11 +14,9 @@ import javax.inject.Singleton
 
 @Module @InstallIn(SingletonComponent::class)
 abstract class RepoModule {
-    // 如果要用 Fake测试 下面注释掉改成 FakeTaskRepo来弄个
     @Binds @Singleton
     abstract fun bindTaskRepo(impl: com.example.studysmart.data.repo.impl.TaskRepoRoomImpl): TaskRepo
 
-    // === Subject：绑定到 Room 实现 ===
     @Binds @Singleton
     abstract fun bindSubjectRepo(impl: SubjectRepoRoomImpl): SubjectRepo
 
