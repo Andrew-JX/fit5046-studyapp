@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/studysmart/presentation/onboarding/OnboardingScreen.kt
 package com.example.studysmart.presentation.onboarding
 
 import androidx.compose.foundation.layout.*
@@ -6,64 +5,104 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OnboardingScreen(onFinish: () -> Unit) {
-    val subjects = listOf("English","Maths","Physics","CS","Art")
-    val difficulties = listOf("Beginner","Intermediate","Advanced")
+fun OnboardingScreen(
+    onFinish: () -> Unit,
+    vm: OnboardingViewModel = viewModel()
+) {
+    val ui by vm.ui.collectAsState()
+    val scope = rememberCoroutineScope()
 
-    var subj by remember { mutableStateOf(subjects.first()) }
-    var expanded1 by remember { mutableStateOf(false) }
+    var major by remember { mutableStateOf(vm.majors.first()) }
+    var expMajor by remember { mutableStateOf(false) }
 
-    var diff by remember { mutableStateOf(difficulties.first()) }
-    var expanded2 by remember { mutableStateOf(false) }
+    var diff by remember { mutableStateOf(vm.difficulties.first()) }
+    var expDiff by remember { mutableStateOf(false) }
 
     var goalHours by remember { mutableStateOf("10") }
+
+    // Listen for save success events → Navigate to Dashboard
+    LaunchedEffect(Unit) {
+        vm.events.collect { e ->
+            when (e) {
+                is OnboardingEvent.Saved -> onFinish()
+                is OnboardingEvent.Error -> {  }
+            }
+        }
+    }
 
     Column(Modifier.fillMaxSize().padding(20.dp)) {
         Text("Welcome 👋", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(12.dp))
         Text("Basic Preferences", style = MaterialTheme.typography.titleMedium)
 
+        // Major
         Text("Major", style = MaterialTheme.typography.bodySmall)
-        ExposedDropdownMenuBox(expanded = expanded1, onExpandedChange = { expanded1 = !expanded1 }) {
+        ExposedDropdownMenuBox(expanded = expMajor, onExpandedChange = { expMajor = !expMajor }) {
             OutlinedTextField(
-                value = subj, onValueChange = {}, readOnly = true,
-                label = { Text("Choose subject") }, modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
+                value = major, onValueChange = {}, readOnly = true,
+                label = { Text("Choose subject") },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
             )
-            ExposedDropdownMenu(expanded = expanded1, onDismissRequest = { expanded1 = false }) {
-                subjects.forEach {
-                    DropdownMenuItem(text = { Text(it) }, onClick = { subj = it; expanded1 = false })
+            ExposedDropdownMenu(expanded = expMajor, onDismissRequest = { expMajor = false }) {
+                vm.majors.forEach {
+                    DropdownMenuItem(text = { Text(it) }, onClick = { major = it; expMajor = false })
                 }
             }
         }
+
         Spacer(Modifier.height(12.dp))
 
+        // Difficulty
         Text("Difficulty", style = MaterialTheme.typography.bodySmall)
-        ExposedDropdownMenuBox(expanded = expanded2, onExpandedChange = { expanded2 = !expanded2 }) {
+        ExposedDropdownMenuBox(expanded = expDiff, onExpandedChange = { expDiff = !expDiff }) {
             OutlinedTextField(
                 value = diff, onValueChange = {}, readOnly = true,
-                label = { Text("Choose level") }, modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
+                label = { Text("Choose level") },
+                modifier = Modifier.menuAnchor().fillMaxWidth()
             )
-            ExposedDropdownMenu(expanded = expanded2, onDismissRequest = { expanded2 = false }) {
-                difficulties.forEach {
-                    DropdownMenuItem(text = { Text(it) }, onClick = { diff = it; expanded2 = false })
+            ExposedDropdownMenu(expanded = expDiff, onDismissRequest = { expDiff = false }) {
+                vm.difficulties.forEach {
+                    DropdownMenuItem(text = { Text(it) }, onClick = { diff = it; expDiff = false })
                 }
             }
         }
+
         Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = goalHours, onValueChange = { goalHours = it.filter(Char::isDigit) },
-            label = { Text("Weekly target duration (hours)") }, singleLine = true, modifier = Modifier.fillMaxWidth()
+            value = goalHours,
+            onValueChange = { goalHours = it.filter(Char::isDigit) },
+            label = { Text("Weekly target duration (hours)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
 
+        // error message
+        ui.error?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onFinish, modifier = Modifier.fillMaxWidth()) { Text("Start") }
+        Button(
+            onClick = { vm.completeOnboarding(major, diff, goalHours) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !ui.isSaving && goalHours.isNotBlank()
+        ) {
+            if (ui.isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Start")
+            }
+        }
     }
 }

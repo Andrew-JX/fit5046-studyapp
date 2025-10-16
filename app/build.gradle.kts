@@ -3,6 +3,10 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
+
+    id ("kotlin-kapt")
+
 }
 
 android {
@@ -11,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.studysmart"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -111,4 +115,22 @@ dependencies {
 
     // Desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+
+    // Retrofit / OkHttp / Moshi
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.moshi:moshi:1.15.1")
+
+    implementation ("com.squareup.moshi:moshi-kotlin:1.15.0")
+    kapt ("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    // Coroutines for Firebase (用于 .await())
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

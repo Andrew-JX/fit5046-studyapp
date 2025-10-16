@@ -7,8 +7,6 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDatePicker(
@@ -27,6 +25,7 @@ fun TaskDatePicker(
         dismissButton = { TextButton(onClick = onDismissRequest) { Text(dismissButtonText) } },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        DatePicker(state = state)   // ✅ 不再传 selectableDates
+        DatePicker(state = state)
     }
 }
+
