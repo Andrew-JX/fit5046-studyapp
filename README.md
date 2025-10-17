@@ -108,6 +108,57 @@ Ensured cohesive color, typography, and layout alignment with ZR’s Material3 g
 Worked with Minyu Ji to connect ViewModels to Room repositories via Hilt injection (TaskRepo, SubjectRepo, SessionRepo).
 Integrated with Zhiruo Zhai’s navigation and DataStore-based user preferences, ensuring all Study, Task, and Session screens are accessible within the navigation flow.
 
+## Jiahui Qing (API Integration & System Behavior Lead)
+### Responsibilities:
+Led the integration of external APIs, system-level notification scheduling, and data visualization across the Login and Dashboard modules.  
+Focused on enhancing user engagement through dynamic content injection, real-time reminders, and intuitive progress tracking.  
+Implemented black-box testing across all screens and resolved critical UI-state inconsistencies.  
+Collaborated with frontend and backend leads to ensure seamless data flow, permission handling, and lifecycle consistency.
+
+### Completed Content:
+Core Features:  
+**LoginScreen**:
+- Integrated public quote API to fetch and display motivational quotes on login.
+- Injected API service via Hilt and bound quote data to UI using reactive StateFlow.
+- Enabled user-triggered refresh with debounce logic and loading feedback.
+
+**DashboardScreen**:
+- Implemented dual-mode study time visualization using Jetpack Compose and MPAndroidChart.
+   - **Pie Chart**: Displays time allocation across subjects.
+   - **Bar Chart**: Shows daily study duration trends.
+- Connected chart data to ViewModel via Flow, ensuring real-time updates and lifecycle awareness.
+
+**Task Reminder System**:
+- Built AlarmManager-based notification scheduler to alert users on task due dates.
+- Designed permission request dialog for POST_NOTIFICATIONS on Android 13+.
+- Ensured compatibility with system notification channels and user preferences.
+
+**Session Management Fixes**:
+- Conducted black-box testing across all screens using manual test cases.
+- Identified and resolved Dashboard bug preventing session deletion.
+- Verified session lifecycle consistency and UI state restoration post-deletion.
+
+**Documentation & Compliance**:
+- Authored final project report.
+- Drafted AI usage declaration outlining model integration, ethical considerations, and transparency practices.
+
+### ViewModel Integration:
+- Injected QuoteRepository via Hilt and exposed quoteState using StateFlow.
+- Subscribed to ViewModel events with collectAsState() and LaunchedEffect for one-time triggers.
+- Connected chart data and alarm scheduling logic to ViewModel actions (e.g., scheduleAlarm(), refreshQuote()).
+- Ensured reactive updates and permission-aware behavior across UI components.
+
+### Cross-cutting Tasks:
+- Applied Material 3 design principles across dialogs, charts, and permission flows.
+- Modularized chart components and permission dialogs.
+- Ensured lifecycle-safe alarm scheduling and notification dispatch.
+- Validated UI behavior under edge cases through black-box testing.
+
+### Interfacing with Other Modules:
+- Coordinated with backend lead to define API contract for quote retrieval and alarm persistence.
+- Integrated with navigation and user preference modules to ensure notification settings and chart filters are preserved.
+- Verified compatibility with Jetpack Compose UI components and Hilt-injected repositories across modules.
+
 # Project merge steps:
 1. Switch to the target branch (team branch)
 git checkout V1
